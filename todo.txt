@@ -1,0 +1,19 @@
+* prototype primary witch hunt interface
+* json -> mithril form types 
+    * maybe just use button stack for everything + server side processing of clicks?
+        * can the boring ass button stack have classes applied to "mark" a button as selected?
+        * can we alternate colors on the buttons so it's clearer that they're buttons? Would that help?
+    * login form
+* json -> LHS cards
+* json -> log messages
+
+
+* how do witches communicate? Maybe have an input box for each of them to type a short message that shows up on other witches screens live?
+    * it's shitty because we need a way to cover for players that are typing. but maybe that's ok
+
+* maybe add a header and collapse button at the top of each section? Then user can hide panes they don't want, which makes mobile nicer
+    * probably need an icon to notify that something has changed.
+
+* favicon
+* serve cdn shit myself
+* fuse.js for search?
