@@ -31,3 +31,28 @@ it'd be great.
 
 
 * emoji reactions on the log? that'd be amazing. could also be the right way to communicate intent among witches w/o text. names in hover on emojis like slack.
+
+
+so one column was neat. card is a bit of a bitch. not super convincing.
+voting on log messages is neat but completely excessive.
+
+next up: two column layout: 
+    1. search & logs (just a sequence of plain text message-body's) & pagination
+        * it'd be cool to have an age indicator (besides game phase) on messages. Live time counter might be distracting. Maybe an icon for 'recent' updates? (either based on physical time, or game phase)
+        * village hanging message: who died, how many votes, and everyone else that receieved votes (and how many) - tool tip on each person and number to see who all voted.
+        * danger for kills, warning for attempts, info notable stuff (e.g., ability activated), primary for private info, regular or dark for votes
+    2. Actions. idk how I should do this
+        a. a "buttons" for each option to vote on, left button is option, others are reactions - except this will require a ton of work to keep aligned correctly
+        b. panels are hot, but how do we signal intent? could use tabs for that, but ugh gross
+            * or tap a person multiple times to indicate stronger conviction, but that doesn't indicate "don't kill this person" 
+            * panel can be colored and selection icon choosen based on action type for fun
+            * tabs don't have to be awful - buttons stay the same, tab chooses input type. that might work really well.
+            * or switch color based on which tab you're on
+        c. table can do it. not the _worst_ idea
+       Also need multiple sets of actions - witches have both witch kill and their own actions to perform
+        * probably good to put each action in a card - header explains what it's for, and then actions in the card content (but panels solve this nicely already...)
+    
+and extras:
+    * mod modal: bunch of buttons for actions a mod can do - toggle pause, mod kills, others?
+    * rule book: modal w/ search? also each character card
+    * switch to nav bar instead of hero
