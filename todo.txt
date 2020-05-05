@@ -17,3 +17,17 @@
 * favicon
 * serve cdn shit myself
 * fuse.js for search?
+
+
+* switch to 2 column view? maybe easier to translate to mobile, and more space for log. put player cards under current action cards.
+* or maybe I was right before. 1 column, 3 tabs (public, private, action). maybe no need to paginate log then. server can control active tab which helps in person play.
+* use a modal for death actions? Use a modal for all (night?) actions?
+
+... what if, there was just the log - no public/private separation, just one
+log. And a button in the hero that pops up a modal w/ character info, admin
+buttons, etc.  so the down side is people need to read the log during some
+actions. Yea, this is probably a bad idea. but if there's a way to make it work
+it'd be great.
+
+
+* emoji reactions on the log? that'd be amazing. could also be the right way to communicate intent among witches w/o text. names in hover on emojis like slack.
