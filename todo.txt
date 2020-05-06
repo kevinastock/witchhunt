@@ -41,6 +41,7 @@ next up: two column layout:
         * it'd be cool to have an age indicator (besides game phase) on messages. Live time counter might be distracting. Maybe an icon for 'recent' updates? (either based on physical time, or game phase)
         * village hanging message: who died, how many votes, and everyone else that receieved votes (and how many) - tool tip on each person and number to see who all voted.
         * danger for kills, warning for attempts, info notable stuff (e.g., ability activated), primary for private info, regular or dark for votes
+        * add some checkboxes under the search bar to filter to notable categories - role+team info, attempts, kills, others?
     2. Actions. idk how I should do this
         a. a "buttons" for each option to vote on, left button is option, others are reactions - except this will require a ton of work to keep aligned correctly
         b. panels are hot, but how do we signal intent? could use tabs for that, but ugh gross
@@ -56,3 +57,15 @@ and extras:
     * mod modal: bunch of buttons for actions a mod can do - toggle pause, mod kills, others?
     * rule book: modal w/ search? also each character card
     * switch to nav bar instead of hero
+
+* Maybe it's just time to use tables for the complicated things:
+    * Logs fits perfectly into a datatable
+        * https://www.datatables.net/
+        * https://listjs.com/
+        * https://github.com/fiduswriter/Simple-DataTables
+        * https://codepen.io/dp_lewis/pen/MwPRYW
+        * https://www.npmjs.com/package/sm-table
+        * https://github.com/eddyystop/mithril-components/tree/master/components/datatable
+    * Reaction voting is also a table - reactions are their own cells so clickable w/ row highlight
+        * No stupid tabs
+        * Everything inside is just buttons. Moar buttons.
