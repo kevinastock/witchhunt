@@ -86,3 +86,8 @@ Probably need to limit user names - long words cause table cells to keep growing
 pause button for everyone - should require some threshold of players to activate (or admin), requires unianimous vote to resume (admin has extra button to force resume)
 
 hysteresis on some controls - certainly reaction, but also probably on the users votes
+
+async split on server - game state maintains the log of things to send players,
+at the end of any async function updating gamestate call `pump` which finds and
+sends new messages to users. `pump` can be restricted to run at most only every
+50ms (but always run within 50ms of being called)
