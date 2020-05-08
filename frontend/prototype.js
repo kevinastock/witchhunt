@@ -1,6 +1,13 @@
 var state = {
     personal: [],
     logs: [
+        // TODO: things to add to log messages:
+        //  * phase: "day" or "night" - maybe use real strings so that fuse.js can search them
+        //  * day count: int
+        //  * a list of people mentioned so fuse can tag search with higher weight
+        //  * flag if this is private (would also be a good tag)
+        //  * ideally anything could be found, but fuse doesn't have to look at msg
+        //  TODO: remove cls
         {id: 1, msg: "test message 1", cls: ""},
         {id: 2, msg: "test message 2", cls: "is-dark"},
         {id: 3, msg: "test message 3", cls: "is-primary"},
@@ -12,36 +19,112 @@ var state = {
         {id: 9, msg: "test message 1", cls: ""},
         {id: 10, msg: "test message 2", cls: "is-dark"},
         {id: 13, msg: "test message 3", cls: "is-primary"},
-        {id: 14, msg: "The standard Lorem Ipsum passage, used since the 1500s", cls: "is-link"},
+        {id: 14, msg: "The standard Lorem Ipsum passage, used since the 1500s asdf awef  asdf awf asdg af awsev wevawesv asdf asfas aewf we asdf asdf aefew  asdf asg ga as vas vase vasev", cls: "is-link"},
         {id: 15, msg: "test message 5", cls: "is-info"},
         {id: 16, msg: "test message 6", cls: "is-success"},
         {id: 17, msg: "test message 7", cls: "is-warning"},
         {id: 18, msg: `<span data-tooltip="foo,bar,baz">Hello World</span>`, cls: "is-danger"},
     ],
-    actions: [],
+    actions: [
+        [
+            // TODO: this need to have a list of people that have voted for this person
+            {selected: true, name: "Kevin", strong_save: ["a", "b", "c"], save: ["d"], kill: ["e"], strong_kill: []},
+            {selected: false, name: "Adam", strong_save: ["a"], save: ["d"], kill: ["e"], strong_kill: ["b", "c"]},
+        ],
+    ],
 }
 
-var player_card = function() {
-    return m("div", {class: "card"}, [
-        m("header", {class: "card-header"}, [
-            m("p", {class: "card-header-title"}, "Loose Cannon"),
+function view_log_msg(l) {
+    return m("tr", [
+        m("td", m("span", {class: "icon"}, m("i", {class: "fas fa-user-secret"}))), // Make sure to always print the span.icon so the space is filled even if no rows are private
+        m("td", m.trust(l.msg)),
+        m("td", {class: "has-text-grey-light"}, m("span", {class: "icon"}, m("i", {class: "fas fa-moon"}))), // also fa-sun for day
+        m("td", {class: "has-text-grey-light"}, "4"),
+    ])
+    // TODO: color for privacy icon?
+}
+
+function log_column() {
+    return [
+        // TODO: don't show all messages, use: https://bulma.io/documentation/components/pagination/
+        m("div", {class: "field"}, [
+            m("div", {class: "control has-icons-left"}, [
+                m("input", {class: "input", type: "text", placeholder: "Search"}), // TODO
+                m("span", {class: "icon is-left"}, m("i", {class: "fas fa-search"})),
+            ]),
         ]),
-        m("div", {class: "card-content"}, [
-            m("div", {class: "content"}, "You can do some stuff!"),
+
+        m("table", {class: "table log-table is-hoverable is-fullwidth"},
+            m("tbody", state.logs.map(view_log_msg))),
+
+        m("nav", {class: "pagination", role: "navigation"}, [
+            m("a", {class: "pagination-previous"}, "Previous"),
+            m("a", {class: "pagination-next"}, "Next"),
+            m("ul", {class: "pagination-list"}, [
+                m("li", {class: "pagination-link"}, 1),
+                m("li", {class: "pagination-ellipsis"}, m.trust("&hellip;")),
+                m("li", {class: "pagination-link"}, 8),
+                m("li", {class: "pagination-link is-current"}, 9),
+                m("li", {class: "pagination-link"}, 10),
+                m("li", {class: "pagination-ellipsis"}, m.trust("&hellip;")),
+                m("li", {class: "pagination-link"}, 20),
+            ]),
         ]),
-        m("footer", {class: "card-footer"}, [
-            // TODO: Replace this thing with a button - it will be disabled sometimes
-            m("a", {onclick: function() {}, class: "card-footer-item"}, "Fire the cannon!"),
-        ]),
+    ]
+}
+
+function reaction(votes, color) {
+    var attrs = {}
+    attrs["class"] = "button"
+    if (true) {
+        // TODO: don't do this if current user in votes
+        attrs["class"] += " is-light"
+        // or this: attrs["class"] += " is-outlined"
+        // TODO: is yellow for warning ok? kinda unreadable on white, esp w/ outlined
+    }
+    if (votes.length > 0) {
+        attrs["class"] += " " + color
+        attrs["data-tooltip"] = votes.join(", ")
+    }
+
+    attrs["onclick"] = function(e) {
+        console.log("button pushed")
+        e.stopPropagation()
+    }
+
+    return m("td", m("a", attrs, votes.length))
+}
+
+
+function vote_row(candidate) {
+    return m("tr", {onclick: function() { console.log("row clicked") }}, [
+        // TODO: this also needs to show how many people have voted for this candidate
+        //  maybe show as an outlined button on the left that disappears entirely if no votes?
+        //  Could maybe replace the skull icon - hollow for others voting, solid for this user voted
+        m("td", m("span", {class: "icon"}, candidate.selected ? m("i", {class: "fas fa-skull"}) : [])), // Make sure to always print the span.icon so the space is filled even if no rows are selected
+        m("td", m.trust(candidate.name)), // strong if selected?
+        reaction(candidate.strong_save, "is-success"),
+        reaction(candidate.save, "is-info"),
+        reaction(candidate.kill, "is-warning"),
+        reaction(candidate.strong_kill, "is-danger"),
     ])
 }
 
-var view_log_msg = function(l) {
-    return m("article", {class: `message ${l.cls}`}, m("div", {class: "message-body"}, m.trust(l.msg)))
-    // TODO: sequence of https://bulma.io/documentation/components/message/#message-body-only
-    //       with only message body. Color by privacy/type of info.
-    //       use a lighter text color to show day / phase of message
+function actions_column() {
+    return [
+        //m("div", {class: "container has-background-primary"}, m("h1", {class: "title"}, "Hello")),
+        m("table", {class: "table log-table is-hoverable is-fullwidth"}, // if we keep using log-table, rename it.
+            m("thead", m("tr", [
+                m("th", {colspan: "2"}, "Villager Hanging"),
+                m("th", {class: "has-text-centered", "data-tooltip": "Strong save"}, "S+"),
+                m("th", {class: "has-text-centered", "data-tooltip": "Save"}, "S"),
+                m("th", {class: "has-text-centered", "data-tooltip": "Kill"}, "K"),
+                m("th", {class: "has-text-centered", "data-tooltip": "Strong Kill"}, "K+"),
+            ])),
+            m("tbody", state.actions[0].map(vote_row))),
+    ]
 }
+
 
 var Game = {
     view: function() {
@@ -82,99 +165,8 @@ var Game = {
             m("section", {class: "section"}, [
                 m("div", {class: "container"}, [
                     m("div", {class: "columns"}, [
-                        m("div", {class: "column"}, [
-                            // Actions
-                            // Maybe just use a table. we've got 5x inputs per user which become easier. Color is kinda shit on tables.
-                            m("nav", {class: "panel is-danger"}, [
-                                m("p", {class: "panel-heading"}, [
-                                    m("span", "Village Hanging"),
-                                    m("span", {class: "is-size-7 is-pulled-right"}, "30 seconds"), // TODO: vertical center
-                                ]),
-                                m("p", {class: "panel-tabs"}, [
-                                    m("a", {class: "is-active"}, "Vote"),
-                                    m("a", {class: ""}, "Strong Save"),
-                                    m("a", {class: ""}, "Save"),
-                                    m("a", {class: ""}, "Kill"),
-                                    m("a", {class: ""}, "Strong Kill"),
-                                ]),
-                                m("a", {class: "panel-block is-active"}, [
-                                    m("span", {class: "panel-icon"}, m("i", {class: "fas fa-skull"})),
-                                    m("span", "James"),
-                                    m("span", {class: "tags is-pulled-right"}, [ // FIXME: this does not right align. https://stackoverflow.com/questions/61627784/right-align-text-in-bulma-panel-block
-                                        m("span", {class: "tag is-success is-light"}, [ // TODO: remove is-light if I selected this tag for this person
-                                            m("span", {class: "icon"}, m("i", {class: "fas fa-shield-alt"})),
-                                            m("span", "4"),
-                                        ]),
-                                        // TODO: add a tag for number of votes this person has right now (and tooltip)
-                                        m("div", {"data-tooltip": "user1, user2"}, 
-                                            m("span", {class: "tag is-info is-light"}, [
-                                                m("span", {class: "icon"}, m("i", {class: "fas fa-skull"})),
-                                                m("span", "5"), 
-                                            ])
-                                        ),
-                                    ]),
-                                ]),
-                                m("a", {class: "panel-block"}, [
-                                    m("span", {class: "panel-icon"}, m("i", {class: "fas fa-skull"})),
-                                    m("span", {class: "is-pulled-right"}, "Mary"),
-                                ]),
-                                m("a", {class: "panel-block"}, [
-                                    m("span", {class: "panel-icon"}, m("i", {class: "fas fa-skull"})),
-                                    "John",
-                                ]),
-                                m("a", {class: "panel-block"}, [
-                                    m("span", {class: "panel-icon"}, m("i", {class: "fas fa-skull"})),
-                                    "Patricia",
-                                ]),
-                                m("a", {class: "panel-block"}, [
-                                    m("span", {class: "panel-icon"}, m("i", {class: "fas fa-skull"})),
-                                    "Robert",
-                                ]),
-                                m("a", {class: "panel-block"}, [
-                                    m("span", {class: "panel-icon"}, m("i", {class: "fas fa-skull"})),
-                                    "Jennifer",
-                                ]),
-                                m("a", {class: "panel-block"}, [
-                                    m("span", {class: "panel-icon"}, m("i", {class: "fas fa-skull"})),
-                                    "Michael",
-                                ]),
-                                m("a", {class: "panel-block"}, [
-                                    m("span", {class: "panel-icon"}, m("i", {class: "fas fa-skull"})),
-                                    "Linda",
-                                ]),
-                                m("a", {class: "panel-block"}, [
-                                    m("span", {class: "panel-icon"}, m("i", {class: "fas fa-skull"})),
-                                    "William",
-                                ]),
-                                m("a", {class: "panel-block"}, [
-                                    m("span", {class: "panel-icon"}, m("i", {class: "fas fa-skull"})),
-                                    "Elizabeth",
-                                ]),
-                                m("a", {class: "panel-block"}, [
-                                    m("span", {class: "panel-icon"}, m("i", {class: "fas fa-skull"})),
-                                    "David",
-                                ]),
-                                m("a", {class: "panel-block"}, [
-                                    m("span", {class: "panel-icon"}, m("i", {class: "fas fa-skull"})),
-                                    "Barbara",
-                                ]),
-                                m("div", {class: "panel-block"},
-                                    // TODO: Should this clear all selections, or just selection in the current tab?
-                                    m("button", {class: "button is-link is-outlined is-fullwidth"}, "Clear all selections")
-                                ),
-                            ]),
-                        ]),
-                        m("div", {class: "column"}, [
-                            // Log messages
-                            m("div", {class: "field"}, [
-                                m("div", {class: "control has-icons-left"}, [
-                                    m("input", {class: "input", type: "text", placeholder: "Search"}), // TODO
-                                    m("span", {class: "icon is-left"}, m("i", {class: "fas fa-search"})),
-                                ]),
-                            ]),
-                        ], state.logs.map(view_log_msg)),
-                        // TODO: don't show all messages, use: https://bulma.io/documentation/components/pagination/
-
+                        m("div", {class: "column"}, actions_column()),
+                        m("div", {class: "column"}, log_column()),
                     ]),
                 ]),
             ]),
