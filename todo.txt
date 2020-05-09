@@ -91,3 +91,16 @@ async split on server - game state maintains the log of things to send players,
 at the end of any async function updating gamestate call `pump` which finds and
 sends new messages to users. `pump` can be restricted to run at most only every
 50ms (but always run within 50ms of being called)
+
+
+dark mode: https://github.com/jgthms/bulma/issues/2342
+
+a lot of stuff is too big on mobile - ideas:
+    - make buttons (esp reaction buttons) small - maybe even make names on reaction tables small
+    - make all emojis small
+    - remove emojis where possible - just bold selected player instead of skull column, remove all extra columns for log messages - user can click and get modal for more info
+
+
+a minigame should be present at least during eyes closed phases which encourages players to click:
+    * trivia is the obvious choice
+    * chess or other board games against an AI

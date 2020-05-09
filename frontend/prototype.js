@@ -1,3 +1,5 @@
+// FIXME: use m("foo.bar") syntax where possible
+
 var state = {
     personal: [],
     logs: [
@@ -98,9 +100,8 @@ function reaction(votes, color) {
 
 function vote_row(candidate) {
     return m("tr", {onclick: function() { console.log("row clicked") }}, [
-        // TODO: this also needs to show how many people have voted for this candidate
-        //  maybe show as an outlined button on the left that disappears entirely if no votes?
-        //  Could maybe replace the skull icon - hollow for others voting, solid for this user voted
+        // This could show how people have actually voted, but that's kinda bullshit, because people can switch at the last moment
+        // and for witch voting, they all share the vote they're casting
         m("td", m("span", {class: "icon"}, candidate.selected ? m("i", {class: "fas fa-skull"}) : [])), // Make sure to always print the span.icon so the space is filled even if no rows are selected
         m("td", m.trust(candidate.name)), // strong if selected?
         reaction(candidate.strong_save, "is-success"),
@@ -110,18 +111,88 @@ function vote_row(candidate) {
     ])
 }
 
+function reaction_voter(actions) {
+    return m("table", {class: "table log-table is-hoverable is-fullwidth"}, // if we keep using log-table, rename it.
+        m("thead", m("tr", [
+            m("th", {colspan: "2"}, "Villager Hanging"),
+            m("th", {class: "has-text-centered", "data-tooltip": "Strong save"}, "S+"),
+            m("th", {class: "has-text-centered", "data-tooltip": "Save"}, "S"),
+            m("th", {class: "has-text-centered", "data-tooltip": "Kill"}, "K"),
+            m("th", {class: "has-text-centered", "data-tooltip": "Strong Kill"}, "K+"),
+        ])),
+        m("tbody", actions.map(vote_row)))
+}
+
+function login_box() {
+    return m(".box", [
+        // TODO: set value to whatever is in their cookie
+        // TODO: gonna need some oninput's on these, on obv onclick on buttons when not disabled
+        // TODO: If going to use placeholders, add icons next to each field so it's clear (fa-users, fa-user, fa-key)
+        // TODO: If not using placeholders + icons, add before control div: m("label", {class: "label"}, "..."),
+        // TODO: need to explain what the "Password" is
+        m("div.field", [
+            m("div.control", [
+                m("input.input", {type: "text", placeholder: "Lobby"}),
+                m("p.help.is-danger", m.trust("&nbsp;")),
+            ]),
+        ]),
+        m("div.field", [
+            m("div.control", [
+                m("input.input", {class: "is-danger", type: "text", placeholder: "Username"}),
+                m("p.help.is-danger", "Foo Bar"),
+            ]),
+        ]),
+        m("div.field", [
+            m("div.control", [
+                m("input.input", {type: "text", placeholder: "Password"}),
+                m("p.help.is-danger", {class: "is-danger"}, m.trust("&nbsp;")),
+            ]),
+        ]),
+        m("div.field", [
+            m("div.control", [
+                m("button.button.is-fullwidth.is-link", {disabled: true, type: "submit"}, "Connect"),
+            ]),
+        ]),
+        m("div.field", [
+            m("div.control", [
+                m("button.button.is-fullwidth.is-link", {/*class: "is-loading",*/ type: "submit"}, "Create lobby"),
+            ]),
+        ]),
+    ])
+}
+
+function login_modal() {
+    // TODO: need to add is-clipped to body when showing modals
+    return m(".modal.is-active", [
+        m(".modal-background"),
+        m(".modal-content", login_box()),
+    ])
+}
+
 function actions_column() {
     return [
         //m("div", {class: "container has-background-primary"}, m("h1", {class: "title"}, "Hello")),
-        m("table", {class: "table log-table is-hoverable is-fullwidth"}, // if we keep using log-table, rename it.
-            m("thead", m("tr", [
-                m("th", {colspan: "2"}, "Villager Hanging"),
-                m("th", {class: "has-text-centered", "data-tooltip": "Strong save"}, "S+"),
-                m("th", {class: "has-text-centered", "data-tooltip": "Save"}, "S"),
-                m("th", {class: "has-text-centered", "data-tooltip": "Kill"}, "K"),
-                m("th", {class: "has-text-centered", "data-tooltip": "Strong Kill"}, "K+"),
-            ])),
-            m("tbody", state.actions[0].map(vote_row))),
+        reaction_voter(state.actions[0]),
+        // TODO: box of buttons (collapsable?):
+        //      - volunteer to die modal
+        //      - apprentice selection
+        //      - gambler selection
+        //      - assassin (button per person)
+        //      - bomber detonate
+        //      - loose cannon (button per person)
+        //      - nurse (button per role)
+        //      - peeping tom (button per role)
+        //      - spiritualist (button per dead player)
+        // TODO: non reaction character selector + modal version
+        //      - BoD + modal
+        //      - DoB + modal
+        //      - Bomber init
+        //      - bomb holder selection
+        //      - fortune teller (roles not names)
+        //      - hunter
+        //      - inquisitor
+        //      - judge (modal only)
+        //      - priest
     ]
 }
 
@@ -129,6 +200,7 @@ function actions_column() {
 var Game = {
     view: function() {
         return [
+            //login_modal(),
             // Header
             m("nav", {class: "navbar is-primary is-fixed-top", role: "navigation"}, [
                 // TODO: add some notifications here
