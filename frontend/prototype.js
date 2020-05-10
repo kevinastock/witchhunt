@@ -1,6 +1,18 @@
 // FIXME: use m("foo.bar") syntax where possible
 
 var state = {
+    login: {
+        logged_in: false,
+
+        lobby_msg: "",
+        username_msg: "",
+        password_msg: "",
+
+        lobby: Cookies.get("lobby"),
+        user: Cookies.get("user"),
+        password: Cookies.get("password"),
+    },
+
     personal: [],
     logs: [
         // TODO: things to add to log messages:
@@ -34,6 +46,16 @@ var state = {
             {selected: false, name: "Adam", strong_save: ["a"], save: ["d"], kill: ["e"], strong_kill: ["b", "c"]},
         ],
     ],
+}
+
+function makeid(length) {
+       var result = '';
+       var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+       var charactersLength = characters.length;
+       for (var i = 0; i < length; i++) {
+           result += characters.charAt(Math.floor(Math.random() * charactersLength));
+       }
+       return result;
 }
 
 function view_log_msg(l) {
@@ -123,52 +145,6 @@ function reaction_voter(actions) {
         m("tbody", actions.map(vote_row)))
 }
 
-function login_box() {
-    return m(".box", [
-        // TODO: set value to whatever is in their cookie
-        // TODO: gonna need some oninput's on these, on obv onclick on buttons when not disabled
-        // TODO: If going to use placeholders, add icons next to each field so it's clear (fa-users, fa-user, fa-key)
-        // TODO: If not using placeholders + icons, add before control div: m("label", {class: "label"}, "..."),
-        // TODO: need to explain what the "Password" is
-        m("div.field", [
-            m("div.control", [
-                m("input.input", {type: "text", placeholder: "Lobby"}),
-                m("p.help.is-danger", m.trust("&nbsp;")),
-            ]),
-        ]),
-        m("div.field", [
-            m("div.control", [
-                m("input.input", {class: "is-danger", type: "text", placeholder: "Username"}),
-                m("p.help.is-danger", "Foo Bar"),
-            ]),
-        ]),
-        m("div.field", [
-            m("div.control", [
-                m("input.input", {type: "text", placeholder: "Password"}),
-                m("p.help.is-danger", {class: "is-danger"}, m.trust("&nbsp;")),
-            ]),
-        ]),
-        m("div.field", [
-            m("div.control", [
-                m("button.button.is-fullwidth.is-link", {disabled: true, type: "submit"}, "Connect"),
-            ]),
-        ]),
-        m("div.field", [
-            m("div.control", [
-                m("button.button.is-fullwidth.is-link", {/*class: "is-loading",*/ type: "submit"}, "Create lobby"),
-            ]),
-        ]),
-    ])
-}
-
-function login_modal() {
-    // TODO: need to add is-clipped to body when showing modals
-    return m(".modal.is-active", [
-        m(".modal-background"),
-        m(".modal-content", login_box()),
-    ])
-}
-
 function actions_column() {
     return [
         //m("div", {class: "container has-background-primary"}, m("h1", {class: "title"}, "Hello")),
@@ -196,60 +172,131 @@ function actions_column() {
     ]
 }
 
+function header() {
+    return m("nav", {class: "navbar is-primary is-fixed-top", role: "navigation"}, [
+        // TODO: add some notifications here
+        // TODO: phase and time remaining, live updates (maybe only every 5/10 seconds)
+        // TODO: what settings? how to set?
+        // TODO: action button modal with timer on it
+        // TODO: pop up with game configuration, including a blurb on what each role does
+        m("div", {class: "container"}, [
+            m("div", {class: "navbar-brand"}, [
+                m("div", {class: "navbar-item"}, m("h1", {class: "is-size-3 has-text-weight-bold"}, "WH")),
+                m("div", {class: "navbar-item"}, m("span", "30 seconds")),
+                m("a", {role: "button", class: "navbar-burger burger", "data-target": "navMenu"}, [
+                    m("span"),
+                    m("span"),
+                    m("span"),
+                ]),
+            ]),
+
+            m("div", {id: "navMenu", class: "navbar-menu"}, [
+                /*
+                        m("div", {class: "navbar-start"}, [
+                        ]),
+                        */
+
+                m("div", {class: "navbar-end"}, [
+                    m("a", {class: "navbar-item"}, "Admin"), // TODO
+                    m("a", {class: "navbar-item"}, "Rules"), // TODO
+                    m("a", {class: "navbar-item"}, "Settings"), // TODO
+                ]),
+            ]),
+        ]),
+    ])
+}
+
+function footer() {
+    return m("footer", {class: "footer"}, [
+        // TODO: link to witch hunt proper & github
+        m("div", {class: "content has-text-centered"}, m("p", "© 2020 Kevin Stock")),
+    ])
+}
+
+function game_body() {
+    return m("section", {class: "section"}, [
+        m("div", {class: "container"}, [
+            m("div", {class: "columns"}, [
+                m("div", {class: "column"}, actions_column()),
+                m("div", {class: "column"}, log_column()),
+            ]),
+        ]),
+    ])
+}
+
+function login_body() {
+    return m("section.section", [
+        m(".container", [
+            m(".columns", [
+                m(".column.is-one-third.is-offset-one-third", [
+                    m(".box", [
+                        // TODO: need to explain what the "Password" is
+                        // TODO: it'd be nice to get the default lobby from a url
+                        m(".field.has-addons", [
+                            m(".control.has-icons-left.is-expanded", [
+                                m("input.input[type=text][placeholder=Lobby]", {
+                                    class: state.login.lobby_msg ? "is-danger" : "",
+                                    value: state.login.lobby,
+                                    onchange: function(e) { state.login.lobby = e.target.value },
+                                }),
+                                m("span.icon.is-left", m("i.fas.fa-users")),
+                                m("p.help.is-danger", m.trust(state.login.lobby_msg)),
+                            ]),
+                            m(".control", m("a.button.is-primary", {onclick: function() { state.login.lobby = makeid(3) }}, m("span.icon", m("i.fas.fa-dice")))),
+                        ]),
+
+                        m(".field", [
+                            m(".control.has-icons-left", [
+                                m("input.input[type=text][placeholder=Username]", { // TODO: [maxlength=12]
+                                    class: state.login.username_msg ? "is-danger" : "",
+                                    value: state.login.username,
+                                    onchange: function(e) { state.login.username = e.target.value },
+                                }),
+                                m("span.icon.is-left", m("i.fas.fa-user")),
+                                m("p.help.is-danger", m.trust(state.login.username_msg)),
+                            ]),
+                        ]),
+
+                        m(".field.has-addons", [
+                            m(".control.has-icons-left.is-expanded", [
+                                m("input.input[type=text][placeholder=Password]", {
+                                    class: state.login.password_msg ? "is-danger" : "",
+                                    value: state.login.password,
+                                    onchange: function(e) { state.login.password = e.target.value },
+                                }),
+                                m("span.icon.is-left", m("i.fas.fa-lock")),
+                                m("p.help.is-danger", m.trust(state.login.password_msg)),
+                            ]),
+                            m(".control", m("a.button.is-primary", {onclick: function() { state.login.password = makeid(3) }}, m("span.icon", m("i.fas.fa-dice")))),
+                        ]),
+
+                        m(".field", [
+                            m(".control", [
+                                m("button.button.is-fullwidth.is-link[type=submit]", {
+                                    // TODO: class: "is-loading",
+                                    onclick: function() {
+                                        console.log(state.login)
+                                    },
+                                }, "Connect"),
+                            ]),
+                        ]),
+                    ]),
+                ]),
+            ]),
+        ]),
+    ])
+}
 
 var Game = {
     view: function() {
         return [
             //login_modal(),
-            // Header
-            m("nav", {class: "navbar is-primary is-fixed-top", role: "navigation"}, [
-                // TODO: add some notifications here
-                // TODO: phase and time remaining, live updates (maybe only every 5/10 seconds)
-                // TODO: what settings? how to set?
-                // TODO: action button modal with timer on it
-                m("div", {class: "container"}, [
-                    m("div", {class: "navbar-brand"}, [
-                        m("div", {class: "navbar-item"}, m("h1", {class: "is-size-3 has-text-weight-bold"}, "WH")),
-                        m("div", {class: "navbar-item"}, m("span", "30 seconds")),
-                        m("a", {role: "button", class: "navbar-burger burger", "data-target": "navMenu"}, [
-                            m("span"),
-                            m("span"),
-                            m("span"),
-                        ]),
-                    ]),
-
-                    m("div", {id: "navMenu", class: "navbar-menu"}, [
-                        /*
-                        m("div", {class: "navbar-start"}, [
-                        ]),
-                        */
-
-                        m("div", {class: "navbar-end"}, [
-                            m("a", {class: "navbar-item"}, "Admin"), // TODO
-                            m("a", {class: "navbar-item"}, "Rules"), // TODO
-                            m("a", {class: "navbar-item"}, "Settings"), // TODO
-                        ]),
-                    ]),
-                ]),
-            ]),
-
-            // Body
-            m("section", {class: "section"}, [
-                m("div", {class: "container"}, [
-                    m("div", {class: "columns"}, [
-                        m("div", {class: "column"}, actions_column()),
-                        m("div", {class: "column"}, log_column()),
-                    ]),
-                ]),
-            ]),
-
-            // Footer
-            m("footer", {class: "footer"}, [
-                // TODO: link to witch hunt proper & github
-                m("div", {class: "content has-text-centered"}, m("p", "© 2020 Kevin Stock")),
-            ]),
+            header(),
+            state.login.logged_in ? game_body() : login_body(),
+            footer(),
         ]
     }
 }
 
+Cookies.set('lobby', 'foobar', {SameSite: "Strict"})
 m.mount(document.body, Game)
