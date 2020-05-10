@@ -2,7 +2,7 @@
 
 var state = {
     login: {
-        logged_in: false,
+        logged_in: true,
 
         lobby_msg: "",
         username_msg: "",
@@ -60,10 +60,10 @@ function makeid(length) {
 
 function view_log_msg(l) {
     return m("tr", [
-        m("td", m("span", {class: "icon"}, m("i", {class: "fas fa-user-secret"}))), // Make sure to always print the span.icon so the space is filled even if no rows are private
+        m("td", m("span.icon", m("i.fas.fa-user-secret"))), // Make sure to always print the span.icon so the space is filled even if no rows are private
         m("td", m.trust(l.msg)),
-        m("td", {class: "has-text-grey-light"}, m("span", {class: "icon"}, m("i", {class: "fas fa-moon"}))), // also fa-sun for day
-        m("td", {class: "has-text-grey-light"}, "4"),
+        m("td.has-text-grey-light", m("span.icon", m("i.fas.fa-moon"))), // also fa-sun for day
+        m("td.has-text-grey-light", "4"),
     ])
     // TODO: color for privacy icon?
 }
@@ -71,27 +71,27 @@ function view_log_msg(l) {
 function log_column() {
     return [
         // TODO: don't show all messages, use: https://bulma.io/documentation/components/pagination/
-        m("div", {class: "field"}, [
-            m("div", {class: "control has-icons-left"}, [
-                m("input", {class: "input", type: "text", placeholder: "Search"}), // TODO
-                m("span", {class: "icon is-left"}, m("i", {class: "fas fa-search"})),
+        m(".field", [
+            m(".control.has-icons-left", [
+                m("input.input[type=text][placeholder=Search]"), // TODO
+                m("span.icon.is-left", m("i.fas.fa-search")),
             ]),
         ]),
 
-        m("table", {class: "table log-table is-hoverable is-fullwidth"},
+        m("table.table.log-table.is-hoverable.is-fullwidth",
             m("tbody", state.logs.map(view_log_msg))),
 
-        m("nav", {class: "pagination", role: "navigation"}, [
-            m("a", {class: "pagination-previous"}, "Previous"),
-            m("a", {class: "pagination-next"}, "Next"),
-            m("ul", {class: "pagination-list"}, [
-                m("li", {class: "pagination-link"}, 1),
-                m("li", {class: "pagination-ellipsis"}, m.trust("&hellip;")),
-                m("li", {class: "pagination-link"}, 8),
-                m("li", {class: "pagination-link is-current"}, 9),
-                m("li", {class: "pagination-link"}, 10),
-                m("li", {class: "pagination-ellipsis"}, m.trust("&hellip;")),
-                m("li", {class: "pagination-link"}, 20),
+        m("nav.pagination[role=navigation]", [ // TODO
+            m("a.pagination-previous[disabled]", "Previous"),
+            m("a.pagination-next", "Next"),
+            m("ul.pagination-list", [
+                m("li.pagination-link", 1),
+                m("li.pagination-ellipsis", m.trust("&hellip;")),
+                m("li.pagination-link", 8),
+                m("li.pagination-link is-current", 9),
+                m("li.pagination-link", 10),
+                m("li.pagination-ellipsis", m.trust("&hellip;")),
+                m("li.pagination-link", 20),
             ]),
         ]),
     ]
@@ -99,7 +99,7 @@ function log_column() {
 
 function reaction(votes, color) {
     var attrs = {}
-    attrs["class"] = "button"
+    attrs["class"] = ""
     if (true) {
         // TODO: don't do this if current user in votes
         attrs["class"] += " is-light"
@@ -116,7 +116,7 @@ function reaction(votes, color) {
         e.stopPropagation()
     }
 
-    return m("td", m("a", attrs, votes.length))
+    return m("td", m("a.button", attrs, votes.length))
 }
 
 
@@ -124,7 +124,7 @@ function vote_row(candidate) {
     return m("tr", {onclick: function() { console.log("row clicked") }}, [
         // This could show how people have actually voted, but that's kinda bullshit, because people can switch at the last moment
         // and for witch voting, they all share the vote they're casting
-        m("td", m("span", {class: "icon"}, candidate.selected ? m("i", {class: "fas fa-skull"}) : [])), // Make sure to always print the span.icon so the space is filled even if no rows are selected
+        m("td", m("span.icon", candidate.selected ? m("i.fas.fa-skull") : [])), // Make sure to always print the span.icon so the space is filled even if no rows are selected
         m("td", m.trust(candidate.name)), // strong if selected?
         reaction(candidate.strong_save, "is-success"),
         reaction(candidate.save, "is-info"),
@@ -134,20 +134,20 @@ function vote_row(candidate) {
 }
 
 function reaction_voter(actions) {
-    return m("table", {class: "table log-table is-hoverable is-fullwidth"}, // if we keep using log-table, rename it.
+    return m("table.table.log-table.is-hoverable.is-fullwidth", // if we keep using log-table, rename it.
         m("thead", m("tr", [
-            m("th", {colspan: "2"}, "Villager Hanging"),
-            m("th", {class: "has-text-centered", "data-tooltip": "Strong save"}, "S+"),
-            m("th", {class: "has-text-centered", "data-tooltip": "Save"}, "S"),
-            m("th", {class: "has-text-centered", "data-tooltip": "Kill"}, "K"),
-            m("th", {class: "has-text-centered", "data-tooltip": "Strong Kill"}, "K+"),
+            m("th[colspan=2]", "Villager Hanging"),
+            // TODO: Rename these to '(Strong|) (Ignore|Select)' so they work for angels too
+            m("th.has-text-centered", {"data-tooltip": "Strong save"}, "S+"),
+            m("th.has-text-centered", {"data-tooltip": "Save"}, "S"),
+            m("th.has-text-centered", {"data-tooltip": "Kill"}, "K"),
+            m("th.has-text-centered", {"data-tooltip": "Strong Kill"}, "K+"),
         ])),
         m("tbody", actions.map(vote_row)))
 }
 
 function actions_column() {
     return [
-        //m("div", {class: "container has-background-primary"}, m("h1", {class: "title"}, "Hello")),
         reaction_voter(state.actions[0]),
         // TODO: box of buttons (collapsable?):
         //      - volunteer to die modal
@@ -173,33 +173,29 @@ function actions_column() {
 }
 
 function header() {
-    return m("nav", {class: "navbar is-primary is-fixed-top", role: "navigation"}, [
+    return m("nav.navbar.is-primary.is-fixed-top[role=navigation]", [
         // TODO: add some notifications here
         // TODO: phase and time remaining, live updates (maybe only every 5/10 seconds)
         // TODO: what settings? how to set?
         // TODO: action button modal with timer on it
         // TODO: pop up with game configuration, including a blurb on what each role does
-        m("div", {class: "container"}, [
-            m("div", {class: "navbar-brand"}, [
-                m("div", {class: "navbar-item"}, m("h1", {class: "is-size-3 has-text-weight-bold"}, "WH")),
-                m("div", {class: "navbar-item"}, m("span", "30 seconds")),
-                m("a", {role: "button", class: "navbar-burger burger", "data-target": "navMenu"}, [
+        m(".container", [
+            m(".navbar-brand", [
+                m(".navbar-item", m("h1.is-size-3.has-text-weight-bold", "WH")),
+                m(".navbar-item", m("span", "30 seconds")),
+                m("a.navbar-burger.burger[role=button][data-target=navMenu]", [
+                    // FIXME: the burger is busted?
                     m("span"),
                     m("span"),
                     m("span"),
                 ]),
             ]),
 
-            m("div", {id: "navMenu", class: "navbar-menu"}, [
-                /*
-                        m("div", {class: "navbar-start"}, [
-                        ]),
-                        */
-
-                m("div", {class: "navbar-end"}, [
-                    m("a", {class: "navbar-item"}, "Admin"), // TODO
-                    m("a", {class: "navbar-item"}, "Rules"), // TODO
-                    m("a", {class: "navbar-item"}, "Settings"), // TODO
+            m(".navbar-menu#navMenu", [
+                m(".navbar-end", [
+                    m("a.navbar-item", "Admin"), // TODO
+                    m("a.navbar-item", "Rules"), // TODO
+                    m("a.navbar-item", "Settings"), // TODO
                 ]),
             ]),
         ]),
@@ -207,18 +203,18 @@ function header() {
 }
 
 function footer() {
-    return m("footer", {class: "footer"}, [
+    return m("footer.footer", [
         // TODO: link to witch hunt proper & github
-        m("div", {class: "content has-text-centered"}, m("p", "© 2020 Kevin Stock")),
+        m(".content.has-text-centered", m("p", "© 2020 Kevin Stock")),
     ])
 }
 
 function game_body() {
-    return m("section", {class: "section"}, [
-        m("div", {class: "container"}, [
-            m("div", {class: "columns"}, [
-                m("div", {class: "column"}, actions_column()),
-                m("div", {class: "column"}, log_column()),
+    return m("section.section", [
+        m(".container", [
+            m(".columns", [
+                m(".column", actions_column()),
+                m(".column", log_column()),
             ]),
         ]),
     ])
