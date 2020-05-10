@@ -286,3 +286,6 @@ tags
 pyvenv.cfg
 .venv
 pip-selfcheck.json
+
+# Where kevin keeps venv's
+envs

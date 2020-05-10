@@ -104,3 +104,5 @@ a lot of stuff is too big on mobile - ideas:
 a minigame should be present at least during eyes closed phases which encourages players to click:
     * trivia is the obvious choice
     * chess or other board games against an AI
+
+consider being a monster and making it so the back button doesn't really work too well. otherwise I know I'm going to click out of the app if anything fullscreen happens...
