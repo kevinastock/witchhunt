@@ -2,7 +2,7 @@
 
 var state = {
     login: {
-        logged_in: true,
+        logged_in: false,
 
         lobby_msg: "",
         username_msg: "",
@@ -233,7 +233,7 @@ function login_body() {
                                 m("input.input[type=text][placeholder=Lobby]", {
                                     class: state.login.lobby_msg ? "is-danger" : "",
                                     value: state.login.lobby,
-                                    onchange: function(e) { state.login.lobby = e.target.value },
+                                    oninput: function(e) { state.login.lobby = e.target.value },
                                 }),
                                 m("span.icon.is-left", m("i.fas.fa-users")),
                                 m("p.help.is-danger", m.trust(state.login.lobby_msg)),
@@ -246,7 +246,7 @@ function login_body() {
                                 m("input.input[type=text][placeholder=Username]", { // TODO: [maxlength=12]
                                     class: state.login.username_msg ? "is-danger" : "",
                                     value: state.login.username,
-                                    onchange: function(e) { state.login.username = e.target.value },
+                                    oninput: function(e) { state.login.username = e.target.value },
                                 }),
                                 m("span.icon.is-left", m("i.fas.fa-user")),
                                 m("p.help.is-danger", m.trust(state.login.username_msg)),
@@ -258,7 +258,7 @@ function login_body() {
                                 m("input.input[type=text][placeholder=Password]", {
                                     class: state.login.password_msg ? "is-danger" : "",
                                     value: state.login.password,
-                                    onchange: function(e) { state.login.password = e.target.value },
+                                    oninput: function(e) { state.login.password = e.target.value },
                                 }),
                                 m("span.icon.is-left", m("i.fas.fa-lock")),
                                 m("p.help.is-danger", m.trust(state.login.password_msg)),
