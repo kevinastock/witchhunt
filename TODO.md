@@ -91,6 +91,10 @@ async split on server - game state maintains the log of things to send players,
 at the end of any async function updating gamestate call `pump` which finds and
 sends new messages to users. `pump` can be restricted to run at most only every
 50ms (but always run within 50ms of being called)
+    * Yea, this really needs to be done so that we don't have to await each update - they can all be sent with asyncio.wait or w/e
+    * esp for login which is very much a special case, it would be nice for everything to return a [(websocket, update)]
+    * some of the player state needs to be versioned - notably the actions pane. it can't just be jammed in by the client
+    * having a server decided order for the log would be neat, but out of order arrivals there probably don't matter
 
 
 dark mode: https://github.com/jgthms/bulma/issues/2342
