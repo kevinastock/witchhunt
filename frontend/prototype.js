@@ -49,23 +49,23 @@ var state = {
             {selected: false, name: "Adam", strong_save: ["a"], save: ["d"], kill: ["e"], strong_kill: ["b", "c"]},
         ],
     ],
-}
+};
 
 var ws = new WebSocket("ws://127.0.0.1:6789/"); // TODO: wss
 
 ws.onmessage = function(e) {
-    data = JSON.parse(e.data)
+    data = JSON.parse(e.data);
 
-    console.log(data)
+    console.log(data);
 
-    state = {...state, ...data}
+    state = {...state, ...data};
     // FIXME: more more does this have to do besides jam some shit into state?
 
     switch (data.action) {
         case 'set_cookies':
-            Cookies.set('lobby', state.login.lobby, {SameSite: "Strict"})
-            Cookies.set('username', state.login.username, {SameSite: "Strict"})
-            Cookies.set('password', state.login.password, {SameSite: "Strict"})
+            Cookies.set('lobby', state.login.lobby, {SameSite: "Strict"});
+            Cookies.set('username', state.login.username, {SameSite: "Strict"});
+            Cookies.set('password', state.login.password, {SameSite: "Strict"});
             break;
         case 'popup':
             console.log("popup!"); // TODO
@@ -73,25 +73,24 @@ ws.onmessage = function(e) {
         case undefined:
             break;
         default:
-            console.error("unsupported event", data)
+            console.error("unsupported event", data);
     }
 
-
-    m.redraw()
-}
+    m.redraw();
+};
 
 ws.onclose = function(e) {
     // This is also closed if the connection can't be established, so that's good
     // FIXME: notify the user that they're disconnected
-    console.log("Connection closed")
-    m.redraw()
-}
+    console.log("Connection closed");
+    m.redraw();
+};
 
 function send(action, data) {
     ws.send(JSON.stringify({
         action: action,
         data: data,
-    }))
+    }));
 }
 
 // FIXME: do some heartbeating like https://github.com/websockets/ws#how-to-detect-and-close-broken-connections
@@ -114,7 +113,7 @@ function view_log_msg(l) {
         m("td", m.trust(l.msg)),
         m("td.has-text-grey-light", m("span.icon", m("i.fas.fa-moon"))), // also fa-sun for day
         m("td.has-text-grey-light", "4"),
-    ])
+    ]);
     // TODO: color for privacy icon?
 }
 
@@ -144,34 +143,34 @@ function log_column() {
                 m("li.pagination-link", 20),
             ]),
         ]),
-    ]
+    ];
 }
 
 function reaction(votes, color) {
-    var attrs = {}
-    attrs["class"] = ""
+    var attrs = {};
+    attrs["class"] = "";
     if (true) {
         // TODO: don't do this if current user in votes
-        attrs["class"] += " is-light"
+        attrs["class"] += " is-light";
         // or this: attrs["class"] += " is-outlined"
         // TODO: is yellow for warning ok? kinda unreadable on white, esp w/ outlined
     }
     if (votes.length > 0) {
-        attrs["class"] += " " + color
-        attrs["data-tooltip"] = votes.join(", ")
+        attrs["class"] += " " + color;
+        attrs["data-tooltip"] = votes.join(", ");
     }
 
-    attrs["onclick"] = function(e) {
-        console.log("button pushed")
-        e.stopPropagation()
-    }
+    attrs.onclick = function(e) {
+        console.log("button pushed");
+        e.stopPropagation();
+    };
 
-    return m("td", m("a.button", attrs, votes.length))
+    return m("td", m("a.button", attrs, votes.length));
 }
 
 
 function vote_row(candidate) {
-    return m("tr", {onclick: function() { console.log("row clicked") }}, [
+    return m("tr", {onclick: function() { console.log("row clicked"); }}, [
         // This could show how people have actually voted, but that's kinda bullshit, because people can switch at the last moment
         // and for witch voting, they all share the vote they're casting
         m("td", m("span.icon", candidate.selected ? m("i.fas.fa-skull") : [])), // Make sure to always print the span.icon so the space is filled even if no rows are selected
@@ -180,7 +179,7 @@ function vote_row(candidate) {
         reaction(candidate.save, "is-info"),
         reaction(candidate.kill, "is-warning"),
         reaction(candidate.strong_kill, "is-danger"),
-    ])
+    ]);
 }
 
 function reaction_voter(actions) {
@@ -193,7 +192,7 @@ function reaction_voter(actions) {
             m("th.has-text-centered", {"data-tooltip": "Kill"}, "K"),
             m("th.has-text-centered", {"data-tooltip": "Strong Kill"}, "K+"),
         ])),
-        m("tbody", actions.map(vote_row)))
+        m("tbody", actions.map(vote_row)));
 }
 
 function actions_column() {
@@ -219,7 +218,7 @@ function actions_column() {
         //      - inquisitor
         //      - judge (modal only)
         //      - priest
-    ]
+    ];
 }
 
 function header() {
@@ -249,14 +248,14 @@ function header() {
                 ]),
             ]),
         ]),
-    ])
+    ]);
 }
 
 function footer() {
     return m("footer.footer", [
         // TODO: link to witch hunt proper & github
         m(".content.has-text-centered", m("p", "© 2020 Kevin Stock")),
-    ])
+    ]);
 }
 
 function game_body() {
@@ -267,14 +266,14 @@ function game_body() {
                 m(".column", log_column()),
             ]),
         ]),
-    ])
+    ]);
 }
 
 function input_enter(e) {
     if (e.key === "Enter") {
-        send("login", state.login)
+        send("login", state.login);
     } else {
-        e.redraw = false
+        e.redraw = false;
     }
 }
 
@@ -291,13 +290,13 @@ function login_body() {
                                 m("input.input[type=text][placeholder=Lobby]", {
                                     class: state.login_messages.lobby? "is-danger" : "",
                                     value: state.login.lobby,
-                                    oninput: function(e) { state.login.lobby = e.target.value.toUpperCase() },
+                                    oninput: function(e) { state.login.lobby = e.target.value.toUpperCase(); },
                                     onkeyup: input_enter,
                                 }),
                                 m("span.icon.is-left", m("i.fas.fa-users")),
                                 m("p.help.is-danger", m.trust(state.login_messages.lobby)),
                             ]),
-                            m(".control", m("a.button.is-primary", {onclick: function() { state.login.lobby = makeid(3) }}, m("span.icon", m("i.fas.fa-dice")))),
+                            m(".control", m("a.button.is-primary", {onclick: function() { state.login.lobby = makeid(3); }}, m("span.icon", m("i.fas.fa-dice")))),
                         ]),
 
                         m(".field", [
@@ -305,7 +304,7 @@ function login_body() {
                                 m("input.input[type=text][placeholder=Username]", { // TODO: [maxlength=12]
                                     class: state.login_messages.username? "is-danger" : "",
                                     value: state.login.username,
-                                    oninput: function(e) { state.login.username = e.target.value },
+                                    oninput: function(e) { state.login.username = e.target.value; },
                                     onkeyup: input_enter,
                                 }),
                                 m("span.icon.is-left", m("i.fas.fa-user")),
@@ -318,20 +317,20 @@ function login_body() {
                                 m("input.input[type=text][placeholder=Password]", {
                                     class: state.login_messages.password ? "is-danger" : "",
                                     value: state.login.password,
-                                    oninput: function(e) { state.login.password = e.target.value },
+                                    oninput: function(e) { state.login.password = e.target.value; },
                                     onkeyup: input_enter,
                                 }),
                                 m("span.icon.is-left", m("i.fas.fa-lock")),
                                 m("p.help.is-danger", m.trust(state.login_messages.password)),
                             ]),
-                            m(".control", m("a.button.is-primary", {onclick: function() { state.login.password = makeid(3) }}, m("span.icon", m("i.fas.fa-dice")))),
+                            m(".control", m("a.button.is-primary", {onclick: function() { state.login.password = makeid(3); }}, m("span.icon", m("i.fas.fa-dice")))),
                         ]),
 
                         m(".field", [
                             m(".control", [
                                 m("button.button.is-fullwidth.is-link[type=submit]", {
                                     // TODO: class: "is-loading",
-                                    onclick: function() { send("login", state.login) },
+                                    onclick: function() { send("login", state.login); },
                                 }, "Connect"),
                             ]),
                         ]),
@@ -339,7 +338,7 @@ function login_body() {
                 ]),
             ]),
         ]),
-    ])
+    ]);
 }
 
 var Game = {
@@ -348,8 +347,8 @@ var Game = {
             header(),
             state.logged_in ? game_body() : login_body(),
             footer(),
-        ]
+        ];
     }
-}
+};
 
-m.mount(document.body, Game)
+m.mount(document.body, Game);
