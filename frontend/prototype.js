@@ -1,16 +1,19 @@
 // FIXME: use m("foo.bar") syntax where possible
 
 var state = {
+    logged_in: false,
+    is_admin: false,
+
     login: {
-        logged_in: false,
-
-        lobby_msg: "",
-        username_msg: "",
-        password_msg: "",
-
         lobby: Cookies.get("lobby"),
-        user: Cookies.get("user"),
+        username: Cookies.get("username"),
         password: Cookies.get("password"),
+    },
+
+    login_messages: {
+        lobby: "",
+        username: "",
+        password: "",
     },
 
     personal: [],
@@ -47,6 +50,53 @@ var state = {
         ],
     ],
 }
+
+var ws = new WebSocket("ws://127.0.0.1:6789/"); // TODO: wss
+
+ws.onmessage = function(e) {
+    data = JSON.parse(e.data)
+
+    console.log(data)
+
+    state = {...state, ...data}
+    // FIXME: more more does this have to do besides jam some shit into state?
+
+    switch (data.action) {
+        case 'set_cookies':
+            Cookies.set('lobby', state.login.lobby, {SameSite: "Strict"})
+            Cookies.set('username', state.login.username, {SameSite: "Strict"})
+            Cookies.set('password', state.login.password, {SameSite: "Strict"})
+            break;
+        case 'popup':
+            console.log("popup!"); // TODO
+            break;
+        case undefined:
+            break;
+        default:
+            console.error("unsupported event", data)
+    }
+
+
+    m.redraw()
+}
+
+ws.onclose = function(e) {
+    // This is also closed if the connection can't be established, so that's good
+    // FIXME: notify the user that they're disconnected
+    console.log("Connection closed")
+    m.redraw()
+}
+
+function send(action, data) {
+    ws.send(JSON.stringify({
+        action: action,
+        data: data,
+    }))
+}
+
+// FIXME: do some heartbeating like https://github.com/websockets/ws#how-to-detect-and-close-broken-connections
+// change navbar to is-danger if heartbeat expires
+// if connection closes, put up a modal?
 
 function makeid(length) {
        var result = '';
@@ -220,6 +270,14 @@ function game_body() {
     ])
 }
 
+function input_enter(e) {
+    if (e.key === "Enter") {
+        send("login", state.login)
+    } else {
+        e.redraw = false
+    }
+}
+
 function login_body() {
     return m("section.section", [
         m(".container", [
@@ -231,12 +289,13 @@ function login_body() {
                         m(".field.has-addons", [
                             m(".control.has-icons-left.is-expanded", [
                                 m("input.input[type=text][placeholder=Lobby]", {
-                                    class: state.login.lobby_msg ? "is-danger" : "",
+                                    class: state.login_messages.lobby? "is-danger" : "",
                                     value: state.login.lobby,
-                                    oninput: function(e) { state.login.lobby = e.target.value },
+                                    oninput: function(e) { state.login.lobby = e.target.value.toUpperCase() },
+                                    onkeyup: input_enter,
                                 }),
                                 m("span.icon.is-left", m("i.fas.fa-users")),
-                                m("p.help.is-danger", m.trust(state.login.lobby_msg)),
+                                m("p.help.is-danger", m.trust(state.login_messages.lobby)),
                             ]),
                             m(".control", m("a.button.is-primary", {onclick: function() { state.login.lobby = makeid(3) }}, m("span.icon", m("i.fas.fa-dice")))),
                         ]),
@@ -244,24 +303,26 @@ function login_body() {
                         m(".field", [
                             m(".control.has-icons-left", [
                                 m("input.input[type=text][placeholder=Username]", { // TODO: [maxlength=12]
-                                    class: state.login.username_msg ? "is-danger" : "",
+                                    class: state.login_messages.username? "is-danger" : "",
                                     value: state.login.username,
                                     oninput: function(e) { state.login.username = e.target.value },
+                                    onkeyup: input_enter,
                                 }),
                                 m("span.icon.is-left", m("i.fas.fa-user")),
-                                m("p.help.is-danger", m.trust(state.login.username_msg)),
+                                m("p.help.is-danger", m.trust(state.login_messages.username)),
                             ]),
                         ]),
 
                         m(".field.has-addons", [
                             m(".control.has-icons-left.is-expanded", [
                                 m("input.input[type=text][placeholder=Password]", {
-                                    class: state.login.password_msg ? "is-danger" : "",
+                                    class: state.login_messages.password ? "is-danger" : "",
                                     value: state.login.password,
                                     oninput: function(e) { state.login.password = e.target.value },
+                                    onkeyup: input_enter,
                                 }),
                                 m("span.icon.is-left", m("i.fas.fa-lock")),
-                                m("p.help.is-danger", m.trust(state.login.password_msg)),
+                                m("p.help.is-danger", m.trust(state.login_messages.password)),
                             ]),
                             m(".control", m("a.button.is-primary", {onclick: function() { state.login.password = makeid(3) }}, m("span.icon", m("i.fas.fa-dice")))),
                         ]),
@@ -270,9 +331,7 @@ function login_body() {
                             m(".control", [
                                 m("button.button.is-fullwidth.is-link[type=submit]", {
                                     // TODO: class: "is-loading",
-                                    onclick: function() {
-                                        console.log(state.login)
-                                    },
+                                    onclick: function() { send("login", state.login) },
                                 }, "Connect"),
                             ]),
                         ]),
@@ -286,13 +345,11 @@ function login_body() {
 var Game = {
     view: function() {
         return [
-            //login_modal(),
             header(),
-            state.login.logged_in ? game_body() : login_body(),
+            state.logged_in ? game_body() : login_body(),
             footer(),
         ]
     }
 }
 
-Cookies.set('lobby', 'foobar', {SameSite: "Strict"})
 m.mount(document.body, Game)
