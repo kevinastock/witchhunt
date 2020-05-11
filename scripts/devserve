@@ -1,0 +1,15 @@
+#!/bin/bash
+set -euf -o pipefail
+
+. envs/prod/bin/activate
+
+trap 'kill $(jobs -p)' EXIT
+
+python3 -m http.server -d frontend/ 8888 &
+
+while true
+do
+    echo "Starting entr"
+    # TODO: add a flag to witchhunt to change log levels, set to DEBUG here
+    fd '\.py$' witchhunt/ | entr -dr python -m witchhunt
+done

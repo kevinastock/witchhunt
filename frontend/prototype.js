@@ -1,8 +1,6 @@
-// FIXME: use m("foo.bar") syntax where possible
-
 var state = {
     logged_in: false,
-    is_admin: false,
+    is_admin: false, // TODO: is this even needed on the client?
 
     login: {
         lobby: Cookies.get("lobby"),
@@ -25,28 +23,90 @@ var state = {
         //  * flag if this is private (would also be a good tag)
         //  * ideally anything could be found, but fuse doesn't have to look at msg
         //  TODO: remove cls
-        {id: 1, msg: "test message 1", cls: ""},
-        {id: 2, msg: "test message 2", cls: "is-dark"},
-        {id: 3, msg: "test message 3", cls: "is-primary"},
-        {id: 4, msg: "The standard Lorem Ipsum passage, used since the 1500s", cls: "is-link"},
-        {id: 5, msg: "test message 5", cls: "is-info"},
-        {id: 6, msg: "test message 6", cls: "is-success"},
-        {id: 7, msg: "test message 7", cls: "is-warning"},
-        {id: 8, msg: `<span data-tooltip="foo,bar,baz">Hello World</span>`, cls: "is-danger"},
-        {id: 9, msg: "test message 1", cls: ""},
-        {id: 10, msg: "test message 2", cls: "is-dark"},
-        {id: 13, msg: "test message 3", cls: "is-primary"},
-        {id: 14, msg: "The standard Lorem Ipsum passage, used since the 1500s asdf awef  asdf awf asdg af awsev wevawesv asdf asfas aewf we asdf asdf aefew  asdf asg ga as vas vase vasev", cls: "is-link"},
-        {id: 15, msg: "test message 5", cls: "is-info"},
-        {id: 16, msg: "test message 6", cls: "is-success"},
-        {id: 17, msg: "test message 7", cls: "is-warning"},
-        {id: 18, msg: `<span data-tooltip="foo,bar,baz">Hello World</span>`, cls: "is-danger"},
+        {
+            id: 1,
+            msg: "test message 1",
+            cls: ""
+        }, {
+            id: 2,
+            msg: "test message 2",
+            cls: "is-dark"
+        }, {
+            id: 3,
+            msg: "test message 3",
+            cls: "is-primary"
+        }, {
+            id: 4,
+            msg: "The standard Lorem Ipsum passage, used since the 1500s",
+            cls: "is-link"
+        }, {
+            id: 5,
+            msg: "test message 5",
+            cls: "is-info"
+        }, {
+            id: 6,
+            msg: "test message 6",
+            cls: "is-success"
+        }, {
+            id: 7,
+            msg: "test message 7",
+            cls: "is-warning"
+        }, {
+            id: 8,
+            msg: `<span data-tooltip="foo,bar,baz">Hello World</span>`,
+            cls: "is-danger"
+        }, {
+            id: 9,
+            msg: "test message 1",
+            cls: ""
+        }, {
+            id: 10,
+            msg: "test message 2",
+            cls: "is-dark"
+        }, {
+            id: 13,
+            msg: "test message 3",
+            cls: "is-primary"
+        }, {
+            id: 14,
+            msg: "The standard Lorem Ipsum passage, used since the 1500s asdf awef  asdf awf asdg af awsev wevawesv asdf asfas aewf we asdf asdf aefew  asdf asg ga as vas vase vasev",
+            cls: "is-link"
+        }, {
+            id: 15,
+            msg: "test message 5",
+            cls: "is-info"
+        }, {
+            id: 16,
+            msg: "test message 6",
+            cls: "is-success"
+        }, {
+            id: 17,
+            msg: "test message 7",
+            cls: "is-warning"
+        }, {
+            id: 18,
+            msg: `<span data-tooltip="foo,bar,baz">Hello World</span>`,
+            cls: "is-danger"
+        },
     ],
     actions: [
         [
             // TODO: this need to have a list of people that have voted for this person
-            {selected: true, name: "Kevin", strong_save: ["a", "b", "c"], save: ["d"], kill: ["e"], strong_kill: []},
-            {selected: false, name: "Adam", strong_save: ["a"], save: ["d"], kill: ["e"], strong_kill: ["b", "c"]},
+            {
+                selected: true,
+                name: "Kevin",
+                strong_save: ["a", "b", "c"],
+                save: ["d"],
+                kill: ["e"],
+                strong_kill: []
+            }, {
+                selected: false,
+                name: "Adam",
+                strong_save: ["a"],
+                save: ["d"],
+                kill: ["e"],
+                strong_kill: ["b", "c"]
+            },
         ],
     ],
 };
@@ -58,14 +118,23 @@ ws.onmessage = function(e) {
 
     console.log(data);
 
-    state = {...state, ...data};
+    state = {
+        ...state,
+        ...data
+    };
     // FIXME: more more does this have to do besides jam some shit into state?
 
     switch (data.action) {
         case 'set_cookies':
-            Cookies.set('lobby', state.login.lobby, {SameSite: "Strict"});
-            Cookies.set('username', state.login.username, {SameSite: "Strict"});
-            Cookies.set('password', state.login.password, {SameSite: "Strict"});
+            Cookies.set('lobby', state.login.lobby, {
+                SameSite: "Strict"
+            });
+            Cookies.set('username', state.login.username, {
+                SameSite: "Strict"
+            });
+            Cookies.set('password', state.login.password, {
+                SameSite: "Strict"
+            });
             break;
         case 'popup':
             console.log("popup!"); // TODO
@@ -98,13 +167,13 @@ function send(action, data) {
 // if connection closes, put up a modal?
 
 function makeid(length) {
-       var result = '';
-       var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-       var charactersLength = characters.length;
-       for (var i = 0; i < length; i++) {
-           result += characters.charAt(Math.floor(Math.random() * charactersLength));
-       }
-       return result;
+    var result = '';
+    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    var charactersLength = characters.length;
+    for (var i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
 }
 
 function view_log_msg(l) {
@@ -170,7 +239,11 @@ function reaction(votes, color) {
 
 
 function vote_row(candidate) {
-    return m("tr", {onclick: function() { console.log("row clicked"); }}, [
+    return m("tr", {
+        onclick: function() {
+            console.log("row clicked");
+        }
+    }, [
         // This could show how people have actually voted, but that's kinda bullshit, because people can switch at the last moment
         // and for witch voting, they all share the vote they're casting
         m("td", m("span.icon", candidate.selected ? m("i.fas.fa-skull") : [])), // Make sure to always print the span.icon so the space is filled even if no rows are selected
@@ -187,10 +260,18 @@ function reaction_voter(actions) {
         m("thead", m("tr", [
             m("th[colspan=2]", "Villager Hanging"),
             // TODO: Rename these to '(Strong|) (Ignore|Select)' so they work for angels too
-            m("th.has-text-centered", {"data-tooltip": "Strong save"}, "S+"),
-            m("th.has-text-centered", {"data-tooltip": "Save"}, "S"),
-            m("th.has-text-centered", {"data-tooltip": "Kill"}, "K"),
-            m("th.has-text-centered", {"data-tooltip": "Strong Kill"}, "K+"),
+            m("th.has-text-centered", {
+                "data-tooltip": "Strong save"
+            }, "S+"),
+            m("th.has-text-centered", {
+                "data-tooltip": "Save"
+            }, "S"),
+            m("th.has-text-centered", {
+                "data-tooltip": "Kill"
+            }, "K"),
+            m("th.has-text-centered", {
+                "data-tooltip": "Strong Kill"
+            }, "K+"),
         ])),
         m("tbody", actions.map(vote_row)));
 }
@@ -288,23 +369,31 @@ function login_body() {
                         m(".field.has-addons", [
                             m(".control.has-icons-left.is-expanded", [
                                 m("input.input[type=text][placeholder=Lobby]", {
-                                    class: state.login_messages.lobby? "is-danger" : "",
+                                    class: state.login_messages.lobby ? "is-danger" : "",
                                     value: state.login.lobby,
-                                    oninput: function(e) { state.login.lobby = e.target.value.toUpperCase(); },
+                                    oninput: function(e) {
+                                        state.login.lobby = e.target.value.toUpperCase();
+                                    },
                                     onkeyup: input_enter,
                                 }),
                                 m("span.icon.is-left", m("i.fas.fa-users")),
                                 m("p.help.is-danger", m.trust(state.login_messages.lobby)),
                             ]),
-                            m(".control", m("a.button.is-primary", {onclick: function() { state.login.lobby = makeid(3); }}, m("span.icon", m("i.fas.fa-dice")))),
+                            m(".control", m("a.button.is-primary", {
+                                onclick: function() {
+                                    state.login.lobby = makeid(3);
+                                }
+                            }, m("span.icon", m("i.fas.fa-dice")))),
                         ]),
 
                         m(".field", [
                             m(".control.has-icons-left", [
                                 m("input.input[type=text][placeholder=Username]", { // TODO: [maxlength=12]
-                                    class: state.login_messages.username? "is-danger" : "",
+                                    class: state.login_messages.username ? "is-danger" : "",
                                     value: state.login.username,
-                                    oninput: function(e) { state.login.username = e.target.value; },
+                                    oninput: function(e) {
+                                        state.login.username = e.target.value;
+                                    },
                                     onkeyup: input_enter,
                                 }),
                                 m("span.icon.is-left", m("i.fas.fa-user")),
@@ -317,20 +406,28 @@ function login_body() {
                                 m("input.input[type=text][placeholder=Password]", {
                                     class: state.login_messages.password ? "is-danger" : "",
                                     value: state.login.password,
-                                    oninput: function(e) { state.login.password = e.target.value; },
+                                    oninput: function(e) {
+                                        state.login.password = e.target.value;
+                                    },
                                     onkeyup: input_enter,
                                 }),
                                 m("span.icon.is-left", m("i.fas.fa-lock")),
                                 m("p.help.is-danger", m.trust(state.login_messages.password)),
                             ]),
-                            m(".control", m("a.button.is-primary", {onclick: function() { state.login.password = makeid(3); }}, m("span.icon", m("i.fas.fa-dice")))),
+                            m(".control", m("a.button.is-primary", {
+                                onclick: function() {
+                                    state.login.password = makeid(3);
+                                }
+                            }, m("span.icon", m("i.fas.fa-dice")))),
                         ]),
 
                         m(".field", [
                             m(".control", [
                                 m("button.button.is-fullwidth.is-link[type=submit]", {
                                     // TODO: class: "is-loading",
-                                    onclick: function() { send("login", state.login); },
+                                    onclick: function() {
+                                        send("login", state.login);
+                                    },
                                 }, "Connect"),
                             ]),
                         ]),
