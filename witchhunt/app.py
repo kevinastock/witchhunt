@@ -28,11 +28,13 @@ class Lobby:
             await websocket.send(
                 json.dumps(
                     {
-                        "login_messages": {
-                            "lobby": lobby_error,
-                            "username": username_error,
-                            "password": password_error,
-                        }
+                        "clobber": {
+                            "login_messages": {
+                                "lobby": lobby_error,
+                                "username": username_error,
+                                "password": password_error,
+                            },
+                        },
                     }
                 )
             )
@@ -43,16 +45,17 @@ class Lobby:
                 websocket, username, password, is_admin
             )
             await websocket.send(
+                # TODO: what to send if they're an admin?
                 json.dumps(
                     {
-                        "login": {
-                            "lobby": lobby,
-                            "username": username,
-                            "password": password,
+                        "clobber": {
+                            "logged_in": {
+                                "lobby": lobby,
+                                "username": username,
+                                "password": password,
+                            },
                         },
-                        "logged_in": True,
-                        "is_admin": is_admin,
-                        "action": "set_cookies",
+                        "actions": ["set_cookies"],
                     }
                 )
             )

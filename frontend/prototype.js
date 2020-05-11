@@ -1,20 +1,27 @@
 var state = {
+    // logged_in is false when not logged in, and an object of
+    // lobby,username,password once successfully connected to a lobby
     logged_in: false,
+
+
     is_admin: false, // TODO: is this even needed on the client?
 
-    login: {
+    // The local state of the form fields for logging in
+    login_form: {
         lobby: Cookies.get("lobby"),
         username: Cookies.get("username"),
         password: Cookies.get("password"),
     },
 
+    // Error messages to show on a failed login attempt
     login_messages: {
         lobby: "",
         username: "",
         password: "",
     },
 
-    personal: [],
+    personal: [], // TODO: probably garbage
+
     logs: [
         // TODO: things to add to log messages:
         //  * phase: "day" or "night" - maybe use real strings so that fuse.js can search them
@@ -116,33 +123,35 @@ var ws = new WebSocket("ws://127.0.0.1:6789/"); // TODO: wss
 ws.onmessage = function(e) {
     data = JSON.parse(e.data);
 
+    // FIXME: debugging
     console.log(data);
 
+    // clobber
     state = {
         ...state,
-        ...data
+        ...data.clobber
     };
-    // FIXME: more more does this have to do besides jam some shit into state?
 
-    switch (data.action) {
-        case 'set_cookies':
-            Cookies.set('lobby', state.login.lobby, {
-                SameSite: "Strict"
-            });
-            Cookies.set('username', state.login.username, {
-                SameSite: "Strict"
-            });
-            Cookies.set('password', state.login.password, {
-                SameSite: "Strict"
-            });
-            break;
-        case 'popup':
-            console.log("popup!"); // TODO
-            break;
-        case undefined:
-            break;
-        default:
-            console.error("unsupported event", data);
+    // append
+    for (let key in data.append) {
+        state[key] = state[key].concat(data.append[key]);
+        state[key].sort(function(a, b) {
+            return a.id - b.id;
+        });
+    }
+
+    // versioned
+    for (let key in data.versioned) {
+        if (data.versioned[key].version > state[key].version) {
+            state[key] = data.versioned[key];
+        }
+    }
+
+    // actions
+    if (data.actions !== undefined) {
+        for (let action of data.actions) {
+            handle_action(action);
+        }
     }
 
     m.redraw();
@@ -160,6 +169,27 @@ function send(action, data) {
         action: action,
         data: data,
     }));
+}
+
+function handle_action(action) {
+    switch (action) {
+        case 'set_cookies':
+            Cookies.set('lobby', state.logged_in.lobby, {
+                SameSite: "Strict"
+            });
+            Cookies.set('username', state.logged_in.username, {
+                SameSite: "Strict"
+            });
+            Cookies.set('password', state.logged_in.password, {
+                SameSite: "Strict"
+            });
+            break;
+        case 'popup':
+            console.log("popup!"); // TODO
+            break;
+        default:
+            console.error("unsupported action from server", action, data);
+    }
 }
 
 // FIXME: do some heartbeating like https://github.com/websockets/ws#how-to-detect-and-close-broken-connections
@@ -352,7 +382,7 @@ function game_body() {
 
 function input_enter(e) {
     if (e.key === "Enter") {
-        send("login", state.login);
+        send("login", state.login_form);
     } else {
         e.redraw = false;
     }
@@ -368,11 +398,11 @@ function login_body() {
                         // TODO: it'd be nice to get the default lobby from a url
                         m(".field.has-addons", [
                             m(".control.has-icons-left.is-expanded", [
-                                m("input.input[type=text][placeholder=Lobby]", {
+                                m("input.input[type=text][placeholder=Lobby][maxlength=12]", {
                                     class: state.login_messages.lobby ? "is-danger" : "",
-                                    value: state.login.lobby,
+                                    value: state.login_form.lobby,
                                     oninput: function(e) {
-                                        state.login.lobby = e.target.value.toUpperCase();
+                                        state.login_form.lobby = e.target.value.toUpperCase();
                                     },
                                     onkeyup: input_enter,
                                 }),
@@ -381,18 +411,18 @@ function login_body() {
                             ]),
                             m(".control", m("a.button.is-primary", {
                                 onclick: function() {
-                                    state.login.lobby = makeid(3);
+                                    state.login_form.lobby = makeid(3);
                                 }
                             }, m("span.icon", m("i.fas.fa-dice")))),
                         ]),
 
                         m(".field", [
                             m(".control.has-icons-left", [
-                                m("input.input[type=text][placeholder=Username]", { // TODO: [maxlength=12]
+                                m("input.input[type=text][placeholder=Username][maxlength=12]", { // TODO: how's this length restriction?
                                     class: state.login_messages.username ? "is-danger" : "",
-                                    value: state.login.username,
+                                    value: state.login_form.username,
                                     oninput: function(e) {
-                                        state.login.username = e.target.value;
+                                        state.login_form.username = e.target.value;
                                     },
                                     onkeyup: input_enter,
                                 }),
@@ -405,9 +435,9 @@ function login_body() {
                             m(".control.has-icons-left.is-expanded", [
                                 m("input.input[type=text][placeholder=Password]", {
                                     class: state.login_messages.password ? "is-danger" : "",
-                                    value: state.login.password,
+                                    value: state.login_form.password,
                                     oninput: function(e) {
-                                        state.login.password = e.target.value;
+                                        state.login_form.password = e.target.value;
                                     },
                                     onkeyup: input_enter,
                                 }),
@@ -416,7 +446,7 @@ function login_body() {
                             ]),
                             m(".control", m("a.button.is-primary", {
                                 onclick: function() {
-                                    state.login.password = makeid(3);
+                                    state.login_form.password = makeid(3);
                                 }
                             }, m("span.icon", m("i.fas.fa-dice")))),
                         ]),
@@ -426,7 +456,7 @@ function login_body() {
                                 m("button.button.is-fullwidth.is-link[type=submit]", {
                                     // TODO: class: "is-loading",
                                     onclick: function() {
-                                        send("login", state.login);
+                                        send("login", state.login_form);
                                     },
                                 }, "Connect"),
                             ]),
