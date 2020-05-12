@@ -6,7 +6,16 @@ from collections import defaultdict, namedtuple
 
 import websockets
 
-Connection = namedtuple("Connection", ["websocket", "username", "password", "is_admin"])
+# TODO: rename websocket to 'address' or some shit
+Connection = namedtuple("Connection", ["address", "username", "password", "is_admin"])
+Message = namedtuple("Message", ["address", "update", "close"], defaults=[{}, False])
+
+
+async def websocket_send(message):
+    if message.close:
+        await message.address.close(reason=message.close)
+    else:
+        await message.address.send(json.dumps(message.update))
 
 
 class Lobby:
@@ -18,15 +27,22 @@ class Lobby:
     def __repr__(self):
         return f"{self.name=} {self.accepting_users=} {self.connections=}"
 
-    async def login(self, websocket, lobby=None, username=None, password=None):
+    def login(self, address, lobby=None, username=None, password=None):
+        """
+        A bit special, this method returns (lobby, messages) so the top level function
+        can associate this address with a lobby.
+        """
+        messages = []
+
         lobby_error = "" if lobby else "Required"
         username_error = "" if username else "Required"
         password_error = "" if password else "Required"
         is_admin = False
 
-        async def error():
-            await websocket.send(
-                json.dumps(
+        def error():
+            messages.append(
+                Message(
+                    address,
                     {
                         "clobber": {
                             "login_messages": {
@@ -35,18 +51,21 @@ class Lobby:
                                 "password": password_error,
                             },
                         },
-                    }
+                    },
                 )
             )
-            return None
+            return None, messages
 
-        async def finish():
+        def finish():
             self.connections[username] = Connection(
-                websocket, username, password, is_admin
+                address, username, password, is_admin
             )
-            await websocket.send(
-                # TODO: what to send if they're an admin?
-                json.dumps(
+            # TODO: add message to everyone that someone has joined the lobby
+            # TODO: update admin panel
+            # TODO: update game selection actions (admin and non-admin)
+            messages.append(
+                Message(
+                    address,
                     {
                         "clobber": {
                             "logged_in": {
@@ -56,36 +75,39 @@ class Lobby:
                             },
                         },
                         "actions": ["set_cookies"],
-                    }
+                    },
                 )
             )
-            return self
+            return self, messages
 
         if any((lobby_error, username_error, password_error)):
-            return await error()
+            return error()
 
         if not self.connections:
             # This is the first connection. Any username/password is valid.
             self.name = lobby  # Needs to be set lazily because defaultdict is dumb
             is_admin = True
-            return await finish()
+            return finish()
 
         if username not in self.connections:
             if self.accepting_users:
-                return await finish()
+                return finish()
             else:
                 lobby_error = "Game in progress, not accepting new users"
-                return await error()
+                return error()
 
         if self.connections[username].password != password:
             password_error = "Incorrect password or username already taken"
-            return await error()
+            return error()
 
         # Notify the existing connection that it is being disconnected
-        await self.connections[username].websocket.close(
-            reason="Connected from another device"
+        messages.append(
+            Message(
+                self.connections[username].address,
+                close="Connected from another device",
+            )
         )
-        return await finish()
+        return finish()
 
 
 LOBBIES = defaultdict(Lobby)
@@ -99,12 +121,22 @@ async def witchhunt_connection(websocket, path):
             action = msg["action"]
             data = msg["data"]
 
+            messages = []
+
             if action == "login":
-                instance = LOBBIES[data.get("lobby")]
-                lobby = await instance.login(websocket, **data)
-                print(lobby)
+                if lobby:
+                    logging.error("Extra attempt to login: %s, %s", action, data)
+                else:
+                    instance = LOBBIES[data.get("lobby")]
+                    lobby, messages = instance.login(websocket, **data)
             else:
-                logging.error("unsupported event: {}: {}", action, data)
+                # TODO: I think the rest of the calls can delegate to the lobby
+                # which can manage dispatching json to functions
+                logging.error("unsupported event: %s, %s", action, data)
+
+            if messages:
+                await asyncio.wait([websocket_send(msg) for msg in messages])
+
     finally:
         # TODO: anything to do here? lobby doesn't actually lose player on ws close
         # await connection.unregister(lobby)
