@@ -14,13 +14,21 @@
 
             2. at least for the voting table, vertical-align to middle so it doesn't look stupid
                 * This might not be good for longer log messages? May want to move phase indicator to bottom
+
+            3. svg to make icons behave a bit like font awesome. tweak as needed I guess.
         -->
 <style>
 .log-table td:nth-child(2) { width: 100%; }
 .table td { vertical-align: middle; }
+svg.faicon {
+    height: 1.1em;
+    font-size: inherit;
+    display: inline-block;
+    width: 1.1em;
+    overflow: visible;
+}
 </style>
         <script src="https://cdn.jsdelivr.net/npm/js-cookie@2.2.1/src/js.cookie.min.js"></script>
-        <script defer async src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
     </head>
     <body class="has-navbar-fixed-top">
         <script src="https://unpkg.com/mithril/mithril.js"></script>

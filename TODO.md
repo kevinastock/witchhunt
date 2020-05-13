@@ -4,6 +4,7 @@
 * favicon
 * serve cdn shit myself
 * fuse.js for search?
+* noscript tag
 
 * use a modal for death actions? Use a modal for all (night?) actions?
 
