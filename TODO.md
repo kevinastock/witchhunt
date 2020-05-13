@@ -101,3 +101,8 @@ there's probably a nice way to not duplicate foo as well
 This becomes neat because the server no longer needs to annotate with how updates should be done. It makes the websocket reciever simple, it just does `update(msg)`.
 View specific things can combine multiple streams, notably, buttons that rely on local state until they know the server has seen their message.
 
+
+How can we handle partial updates to nested data? maybe use https://www.npmjs.com/package/jsonpath ? that's a bit heavy weight for what I need
+maybe all object updates should be deep merges like https://github.com/TehShrike/deepmerge ?
+it'd be nice if such a solution were deeply integrated with streams so that there's, e.g., a stream for reactions to a given player, and a stream for the local decision, which can be combined for the view
+
