@@ -82,3 +82,22 @@ should log messages be updateable by the server? ordering would _suck_, but it w
 currently using the "all" webfont packs. Use something from here to just get
 the icons I want, serving multi MB fonts is dumb:
 https://github.com/FortAwesome/Font-Awesome/wiki/Customize-Font-Awesome
+
+Maybe state can be made into a bunch of streams:
+
+    function clobber(config, update)
+    {
+        foo: Stream.scan(clobber, {name: "foo", value: false}, updates_stream),
+        ...
+    }
+
+there's probably a nice way to not duplicate foo as well
+
+    var state = {};
+    var updates = Stream();
+    def add_field(name, init, update_strategy) { state[name] = Stream.scan(update_strategy, {name: name, value: init}, updates).map(x => x.value); }
+    def clobber(field, update) { return { name: field.name, value: update[field.name] }; }
+
+This becomes neat because the server no longer needs to annotate with how updates should be done. It makes the websocket reciever simple, it just does `update(msg)`.
+View specific things can combine multiple streams, notably, buttons that rely on local state until they know the server has seen their message.
+
