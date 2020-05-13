@@ -78,3 +78,7 @@ a minigame should be present at least during eyes closed phases which encourages
 consider being a monster and making it so the back button doesn't really work too well. otherwise I know I'm going to click out of the app if anything fullscreen happens...
 
 should log messages be updateable by the server? ordering would _suck_, but it would be kinda cool. Maybe stupid. No need for it yet.
+
+currently using the "all" webfont packs. Use something from here to just get
+the icons I want, serving multi MB fonts is dumb:
+https://github.com/FortAwesome/Font-Awesome/wiki/Customize-Font-Awesome

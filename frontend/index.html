@@ -6,6 +6,7 @@
         <title>Witch Hunt</title>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.2/css/bulma.min.css" integrity="sha256-qS+snwBgqr+iFVpBB58C9UCxKFhyL03YHpZfdNUhSEw=" crossorigin="anonymous">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@creativebulma/bulma-tooltip@1.0.2/dist/bulma-tooltip.min.css" integrity="sha256-yrljwGEhk69hk/xOVx0Y/OMwBAh08h5zQmpW/QkoubU=" crossorigin="anonymous">
+        <link rel="stylesheet" href="fontawesome/css/all.min.css">
         <!--
             Custom CSS notes:
 
@@ -14,19 +15,10 @@
 
             2. at least for the voting table, vertical-align to middle so it doesn't look stupid
                 * This might not be good for longer log messages? May want to move phase indicator to bottom
-
-            3. svg to make icons behave a bit like font awesome. tweak as needed I guess.
         -->
 <style>
 .log-table td:nth-child(2) { width: 100%; }
 .table td { vertical-align: middle; }
-svg.faicon {
-    height: 1.1em;
-    font-size: inherit;
-    display: inline-block;
-    width: 1.1em;
-    overflow: visible;
-}
 </style>
         <script src="https://cdn.jsdelivr.net/npm/js-cookie@2.2.1/src/js.cookie.min.js"></script>
     </head>
