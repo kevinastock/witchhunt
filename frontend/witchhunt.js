@@ -1,3 +1,7 @@
+var Cookies = require("js-cookie");
+
+var m = require("mithril");
+
 var state = {
     // logged_in is false when not logged in, and an object of
     // lobby,username,password once successfully connected to a lobby

@@ -5,7 +5,8 @@ set -euf -o pipefail
 
 trap 'kill $(jobs -p)' EXIT
 
-python3 -m http.server -d frontend/ 8888 &
+# FIXME: Nope, use yarn
+yarn dev &
 
 while true
 do

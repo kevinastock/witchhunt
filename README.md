@@ -2,10 +2,13 @@
 
 ...
 
+# Requirements
+
+python3
+yarn
+
+
 # pre commit checks
 
-python3 -m venv envs/dev
-source envs/dev/bin/activate.fish
-pip install -r requirements.txt -r requirements-dev.txt
-black witchhunt/
-flake8 witchhunt/
+scripts/setup
+scripts/pre-commit

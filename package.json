@@ -1,0 +1,20 @@
+{
+  "name": "witchhunt",
+  "dependencies": {
+    "@creativebulma/bulma-tooltip": "^1.1.0",
+    "@fortawesome/fontawesome-free": "^5.13.0",
+    "js-cookie": "^2.2.1",
+    "mithril": "^2.0.4"
+  },
+  "devDependencies": {
+    "bulma": "^0.8.2",
+    "js-beautify": "^1.11.0",
+    "jshint": "^2.11.0",
+    "parcel-bundler": "^1.12.4",
+    "sass": "^1.26.5"
+  },
+  "scripts": {
+    "dev": "parcel frontend/index.html",
+    "build": "parcel build frontend/index.html"
+  }
+}

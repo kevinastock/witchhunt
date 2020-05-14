@@ -1,0 +1,18 @@
+@charset "utf-8";
+@import "../node_modules/bulma/bulma.sass";
+@import "@fortawesome/fontawesome-free/css/all.css";
+
+// Custom CSS notes:
+//
+// 1. ensure the primary text column of tables is as wide as possible as others witl have ~static sized content
+//     * Probably need to rename this to something other than .log-table
+//
+// 2. at least for the voting table, vertical-align to middle so it doesn't look stupid
+//     * This might not be good for longer log messages? May want to move phase indicator to bottom
+.log-table td:nth-child(2) {
+    width: 100%;
+}
+
+.table td {
+    vertical-align: middle;
+}

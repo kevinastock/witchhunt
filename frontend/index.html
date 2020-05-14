@@ -4,26 +4,9 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Witch Hunt</title>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.2/css/bulma.min.css" integrity="sha256-qS+snwBgqr+iFVpBB58C9UCxKFhyL03YHpZfdNUhSEw=" crossorigin="anonymous">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@creativebulma/bulma-tooltip@1.0.2/dist/bulma-tooltip.min.css" integrity="sha256-yrljwGEhk69hk/xOVx0Y/OMwBAh08h5zQmpW/QkoubU=" crossorigin="anonymous">
-        <link rel="stylesheet" href="fontawesome/css/all.min.css">
-        <!--
-            Custom CSS notes:
-
-            1. ensure the primary text column of tables is as wide as possible as others witl have ~static sized content
-                * Probably need to rename this to something other than .log-table
-
-            2. at least for the voting table, vertical-align to middle so it doesn't look stupid
-                * This might not be good for longer log messages? May want to move phase indicator to bottom
-        -->
-<style>
-.log-table td:nth-child(2) { width: 100%; }
-.table td { vertical-align: middle; }
-</style>
-        <script src="https://cdn.jsdelivr.net/npm/js-cookie@2.2.1/src/js.cookie.min.js"></script>
+        <link rel="stylesheet" href="./style.scss">
     </head>
     <body class="has-navbar-fixed-top">
-        <script src="https://unpkg.com/mithril/mithril.js"></script>
-        <script src="/prototype.js"></script>
+        <script src="./witchhunt.js"></script>
     </body>
 </html>

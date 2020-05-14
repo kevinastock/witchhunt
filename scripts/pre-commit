@@ -10,11 +10,10 @@ echo ""
 echo "flake8..."
 flake8 witchhunt/
 
-# TODO: I just expect this to be installed on the system.
 echo ""
 echo "jslint..."
-jshint -c .jshint frontend/prototype.js
+yarn jshint -c .jshint frontend/witchhunt.js
 
 echo ""
 echo "js-beautify"
-js-beautify --replace --end-with-newline frontend/prototype.js
+yarn js-beautify --replace --end-with-newline frontend/witchhunt.js
