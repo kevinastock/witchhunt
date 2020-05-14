@@ -60,7 +60,7 @@ for (var i = 0; i < 100; i++) {
     //  msg: `<span data-tooltip="foo,bar,baz">Hello World</span>`,
     state.logs.push({
         id: i,
-        msg: makeid(3),
+        msg: '<span data-tooltip="Hello Kevin">' + makeid(3) + '</span>',
         secret: Math.random() >= 0.5,
         time_of_day: ["day", "night"][Math.floor(Math.random() * 2)],
         day: i,

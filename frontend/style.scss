@@ -1,9 +1,8 @@
 @charset "utf-8";
 @import "~bulma/bulma.sass";
 @import "@fortawesome/fontawesome-free/css/all.css";
+@import "@creativebulma/bulma-tooltip/dist/bulma-tooltip.css"; // FIXME: why can't I import the sass here?
 
-// Custom CSS notes:
-//
 // 1. ensure the primary text column of tables is as wide as possible as others witl have ~static sized content
 //     * Probably need to rename this to something other than .log-table
 //
