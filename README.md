@@ -1,14 +1,15 @@
 # Witchhunt
 
-...
+Make sure you have `python3` and `yarn` installed on your system.
 
-# Requirements
+Get all the dependencies:
 
-python3
-yarn
+    scripts/setup
 
+Give it a try:
 
-# pre commit checks
+    scripts/devserve
 
-scripts/setup
-scripts/pre-commit
+If you make some changes, run the pre-commit hooks:
+
+    scripts/pre-commit
