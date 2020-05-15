@@ -30,12 +30,10 @@ class Lobby:
                 Message(
                     address,
                     {
-                        "clobber": {
-                            "login_messages": {
-                                "lobby": lobby_error,
-                                "username": username_error,
-                                "password": password_error,
-                            },
+                        "login_messages": {
+                            "lobby": lobby_error,
+                            "username": username_error,
+                            "password": password_error,
                         },
                     },
                 )
@@ -53,14 +51,11 @@ class Lobby:
                 Message(
                     address,
                     {
-                        "clobber": {
-                            "logged_in": {
-                                "lobby": lobby,
-                                "username": username,
-                                "password": password,
-                            },
+                        "logged_in": {
+                            "lobby": lobby,
+                            "username": username,
+                            "password": password,
                         },
-                        "actions": ["set_cookies"],
                     },
                 )
             )
