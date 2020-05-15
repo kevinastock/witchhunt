@@ -161,6 +161,7 @@ var terminal_search_dispatcher = Stream.lift(function(logs, query) {
     if (query.length === 0) {
         local_state.search_id = local_state.next_search_id++;
         local_state.log_search_result(logs);
+        m.redraw(); // I'm not sure if this is needed - we might reach here before the oninput function finishes. but it's harmless
         return Stream.SKIP;
     }
 
