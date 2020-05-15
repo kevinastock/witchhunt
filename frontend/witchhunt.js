@@ -1,26 +1,13 @@
 var Cookies = require("js-cookie");
 var m = require("mithril");
 var Stream = require("mithril/stream");
-
-// Stuff that the server will never update
-var local_state = {
-    // The local state of the form fields for logging in
-    login_form: {
-        lobby: Cookies.get("lobby"),
-        username: Cookies.get("username"),
-        password: Cookies.get("password"),
-    },
-
-    log_offset: 0,
-    log_page_size: 10, // FIXME: save/restore this from a cookie
-};
+var Fuse = require("fuse.js/dist/fuse.common.js");
 
 
 var updates = Stream();
 
 var state = {
     // is_admin: false, // TODO: is this even needed on the client?
-    logs: [],
     actions: [
         [
             // TODO: this need to have a list of people that have voted for this person
@@ -43,7 +30,7 @@ var state = {
     ],
 };
 
-function clobber(accumulator, update) {
+function update_clobber(accumulator, update) {
     let name = accumulator.name;
     if (name in update) {
         return {
@@ -54,7 +41,21 @@ function clobber(accumulator, update) {
     return Stream.SKIP;
 }
 
+function update_append(accumulator, update) {
+    let name = accumulator.name;
+    if (name in update) {
+        accumulator.value.push(...update[name]);
+        accumulator.value.sort(function(a, b) {
+            return a.id - b.id;
+        });
+        return accumulator;
+    }
+    return Stream.SKIP;
+}
+
 function add_state_field(name, init, update_strategy) {
+    // TODO: map updates to only accept those with name as a key, then individuals can forget their own name
+    // maybe even move everything out of the state object?
     state[name] = Stream.scan(update_strategy, {
         name: name,
         value: init
@@ -64,7 +65,7 @@ function add_state_field(name, init, update_strategy) {
 
 // logged_in is false when not logged in, and an object of
 // lobby,username,password once successfully connected to a lobby
-add_state_field("logged_in", false, clobber).map(function(login) {
+add_state_field("logged_in", false, update_clobber).map(function(login) {
     if (login) {
         // If we've gotten a successful login, set the cookies.
         Cookies.set('lobby', login.lobby, {
@@ -85,8 +86,10 @@ add_state_field("login_messages", {
     lobby: "",
     username: "",
     password: "",
-}, clobber);
+}, update_clobber);
 
+
+add_state_field("logs", [], update_append);
 
 // FIXME delete this shit.
 for (var i = 0; i < 100; i++) {
@@ -95,15 +98,56 @@ for (var i = 0; i < 100; i++) {
     //  * flag if this is private (would also be a good tag)
     //  * ideally anything could be found, but fuse doesn't have to look at msg
     //  msg: `<span data-tooltip="foo,bar,baz">Hello World</span>`,
-    state.logs.push({
-        id: i,
-        msg: '<span data-tooltip="Hello Kevin">' + makeid(3) + '</span>',
-        secret: Math.random() >= 0.5,
-        time_of_day: ["day", "night"][Math.floor(Math.random() * 2)],
-        day: i,
+    let tod = ["day", "night"][Math.floor(Math.random() * 2)];
+    let foobar = makeid(3);
+    let secret = Math.random() >= 0.5;
+    let tags = [tod, foobar];
+    if (secret) {
+        tags.push("secret");
+    } else {
+        tags.push("public");
+    }
+
+    updates({
+        "logs": [{
+            id: i,
+            msg: '<span data-tooltip="Hello Kevin">' + foobar + '</span>',
+            secret: secret,
+            time_of_day: tod,
+            day: i,
+            tags: tags,
+        }, ]
     });
 }
 // end of garbage test code
+
+// Stuff that the server will never update
+var local_state = {
+    // The local state of the form fields for logging in
+    login_form: {
+        lobby: Cookies.get("lobby"),
+        username: Cookies.get("username"),
+        password: Cookies.get("password"),
+    },
+
+    log_offset: 0,
+    log_page_size: 10, // FIXME: save/restore this from a cookie
+
+    log_search_query: Stream(''),
+};
+
+local_state.query_searcher = state.logs.map(logs => new Fuse(logs, {
+    useExtendedSearch: true,
+    shouldSort: false,
+    keys: ['tags']
+}));
+
+local_state.log_search_result = Stream.lift(function(searchable, logs, query) {
+    if (query.length > 0) {
+        return searchable.search(query).map(x => x.item);
+    }
+    return logs;
+}, local_state.query_searcher, state.logs, local_state.log_search_query);
 
 var ws = new WebSocket("ws://127.0.0.1:6789/"); // TODO: wss
 
@@ -119,13 +163,6 @@ ws.onmessage = function(e) {
 
     /* FIXME: add update_strategy's for these
     // append
-    for (let key in data.append) {
-        state[key] = state[key].concat(data.append[key]);
-        state[key].sort(function(a, b) {
-            return a.id - b.id;
-        });
-    }
-
     // versioned
     for (let key in data.versioned) {
         if (data.versioned[key].version > state[key].version) {
@@ -267,7 +304,11 @@ function log_column() {
         // TODO: don't show all messages, use: https://bulma.io/documentation/components/pagination/
         m(".field", [
             m(".control.has-icons-left", [
-                m("input.input[type=text][placeholder=Search]"), // TODO
+                m("input.input[type=text][placeholder=Search]", {
+                    oninput: function(e) {
+                        local_state.log_search_query(e.target.value);
+                    },
+                }),
                 m("span.icon.is-left", m("i.fas.fa-search")),
             ]),
             // TODO: if there's text here, add an X on the right to clear it
@@ -275,9 +316,9 @@ function log_column() {
 
         m("table.table.log-table.is-hoverable.is-fullwidth",
             // FIXME: need to traverse the list backwards
-            m("tbody", log_rows_page(state.logs))),
+            m("tbody", log_rows_page(local_state.log_search_result()))),
 
-        paginator(state.logs.length),
+        paginator(local_state.log_search_result().length),
     ];
 }
 

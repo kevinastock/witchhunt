@@ -3,7 +3,6 @@
 
 * favicon
 * serve cdn shit myself
-* fuse.js for search?
 * noscript tag
 
 * use a modal for death actions? Use a modal for all (night?) actions?
@@ -52,7 +51,9 @@ Probably need to limit user names - long words cause table cells to keep growing
     - disable sorting
     - might need to turn threshold down some
     - maybe good to increase distance a bunch
-
+    - Searching an array doesn't allow AND'ing multiple searches across the array, just in one tag. We could fix this by jamming all the tags in one string and bumping up the distance a ton
+    - Search also gets a bit with too many messages. Need to figure out how many messages to expect, but we might want to put indexing and searching into a webworker
+    - And we could make the search box border change color when the computer is thinking!
 
 
 pause button for everyone - should require some threshold of players to activate (or admin), requires unianimous vote to resume (admin has extra button to force resume)
