@@ -1,7 +1,6 @@
 var Cookies = require("js-cookie");
 var m = require("mithril");
 var Stream = require("mithril/stream");
-var Fuse = require("fuse.js/dist/fuse.common.js");
 
 
 var updates = Stream();
@@ -93,7 +92,7 @@ add_state_field("logs", [], update_append);
 
 // FIXME delete this shit.
 let stupid_test_data = [];
-for (var i = 0; i < 100; i++) {
+for (var i = 0; i < 5000; i++) {
     // TODO: things to add to log messages:
     //  * a list of people mentioned so fuse can tag search with higher weight
     //  * flag if this is private (would also be a good tag)
@@ -137,31 +136,35 @@ var local_state = {
 
     log_search_query: Stream(''),
 
-    searcher: false,
+    searcher: new Worker('searcher.js'),
+    search_id: 0,
+    next_search_id: 1,
     log_search_result: Stream([]),
 };
 
-var terminal_search_dispatcher = Stream.lift(function(logs, query) {
-    if (local_state.searcher) {
-        local_state.searcher.terminate();
+local_state.searcher.onmessage = function(e) {
+    let version = e.data[0];
+    let logs = e.data[1];
+
+    if (version < local_state.search_id) {
+        return;
     }
 
+    local_state.search_id = version;
+    local_state.log_search_result(logs);
+    local_state.log_offset = 0;
+    m.redraw();
+};
+
+var terminal_search_dispatcher = Stream.lift(function(logs, query) {
+    local_state.log_offset = 0;
     if (query.length === 0) {
-        local_state.searcher = false;
+        local_state.search_id = local_state.next_search_id++;
         local_state.log_search_result(logs);
         return Stream.SKIP;
     }
 
-    let search = new Worker('searcher.js');
-    local_state.searcher = search;
-
-    search.onmessage = function(e) {
-        local_state.log_search_result(e.data);
-        local_state.searcher = false;
-        search.terminate();
-    };
-
-    search.postMessage([logs, query]);
+    local_state.searcher.postMessage([logs, query, local_state.next_search_id++]);
     return Stream.SKIP;
 }, state.logs, local_state.log_search_query);
 
@@ -321,6 +324,7 @@ function log_column() {
         m(".field", [
             m(".control.has-icons-left", [
                 m("input.input[type=text][placeholder=Search]", {
+                    class: local_state.search_id + 1 < local_state.next_search_id ? "is-danger" : "",
                     oninput: function(e) {
                         local_state.log_search_query(e.target.value);
                     },
