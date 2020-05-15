@@ -108,12 +108,14 @@ for (var i = 0; i < 100; i++) {
 var ws = new WebSocket("ws://127.0.0.1:6789/"); // TODO: wss
 
 ws.onmessage = function(e) {
-    data = JSON.parse(e.data);
+    let data = JSON.parse(e.data);
 
     // FIXME: debugging
     console.log(data);
 
     updates(data);
+
+    // FIXME: it would be good to log state here for debugging, but need to show actual values not stream objects
 
     /* FIXME: add update_strategy's for these
     // append
