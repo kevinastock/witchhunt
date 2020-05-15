@@ -10,4 +10,4 @@ onmessage = function(e) {
         keys: ['tags'],
     });
     postMessage([version, fuse.search(query).map(x => x.item)]);
-}
+};

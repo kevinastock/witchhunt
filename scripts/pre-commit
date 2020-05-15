@@ -12,8 +12,8 @@ flake8 witchhunt/
 
 echo ""
 echo "jslint..."
-yarn jshint -c .jshint frontend/witchhunt.js
+yarn jshint -c .jshint frontend
 
 echo ""
 echo "js-beautify"
-yarn js-beautify --replace --end-with-newline frontend/witchhunt.js
+yarn js-beautify --replace --end-with-newline frontend/*.js
