@@ -136,20 +136,34 @@ var local_state = {
     log_page_size: 10, // FIXME: save/restore this from a cookie
 
     log_search_query: Stream(''),
+
+    searcher: false,
+    log_search_result: Stream([]),
 };
 
-local_state.query_searcher = state.logs.map(logs => new Fuse(logs, {
-    useExtendedSearch: true,
-    shouldSort: false,
-    keys: ['tags']
-}));
-
-local_state.log_search_result = Stream.lift(function(searchable, logs, query) {
-    if (query.length > 0) {
-        return searchable.search(query).map(x => x.item);
+var terminal_search_dispatcher = Stream.lift(function(logs, query) {
+    if (local_state.searcher) {
+        local_state.searcher.terminate();
     }
-    return logs;
-}, local_state.query_searcher, state.logs, local_state.log_search_query);
+
+    if (query.length === 0) {
+        local_state.searcher = false;
+        local_state.log_search_result(logs);
+        return Stream.SKIP;
+    }
+
+    let search = new Worker('searcher.js');
+    local_state.searcher = search;
+
+    search.onmessage = function(e) {
+        local_state.log_search_result(e.data);
+        local_state.searcher = false;
+        search.terminate();
+    };
+
+    search.postMessage([logs, query]);
+    return Stream.SKIP;
+}, state.logs, local_state.log_search_query);
 
 var ws = new WebSocket("ws://127.0.0.1:6789/"); // TODO: wss
 
