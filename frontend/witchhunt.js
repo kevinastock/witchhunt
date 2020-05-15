@@ -92,6 +92,7 @@ add_state_field("login_messages", {
 add_state_field("logs", [], update_append);
 
 // FIXME delete this shit.
+let stupid_test_data = [];
 for (var i = 0; i < 100; i++) {
     // TODO: things to add to log messages:
     //  * a list of people mentioned so fuse can tag search with higher weight
@@ -108,17 +109,18 @@ for (var i = 0; i < 100; i++) {
         tags.push("public");
     }
 
-    updates({
-        "logs": [{
-            id: i,
-            msg: '<span data-tooltip="Hello Kevin">' + foobar + '</span>',
-            secret: secret,
-            time_of_day: tod,
-            day: i,
-            tags: tags,
-        }, ]
+    stupid_test_data.push({
+        id: i,
+        msg: '<span data-tooltip="Hello Kevin">' + foobar + '</span>',
+        secret: secret,
+        time_of_day: tod,
+        day: i,
+        tags: tags,
     });
 }
+updates({
+    "logs": stupid_test_data,
+});
 // end of garbage test code
 
 // Stuff that the server will never update

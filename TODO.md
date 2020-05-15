@@ -47,14 +47,22 @@ Probably need to limit user names - long words cause table cells to keep growing
 
 * fuse.js
     - create an index whenever new logs are received?
+        - Didn't seem to help much with a few short tags, might help more if we make one big tag per log message
     - shouldn't need to look at msg field
-    - disable sorting
     - might need to turn threshold down some
     - maybe good to increase distance a bunch
     - Searching an array doesn't allow AND'ing multiple searches across the array, just in one tag. We could fix this by jamming all the tags in one string and bumping up the distance a ton
     - Search also gets a bit with too many messages. Need to figure out how many messages to expect, but we might want to put indexing and searching into a webworker
     - And we could make the search box border change color when the computer is thinking!
-
+    - Benchmark the dumb case:
+        - tags are all lowercase and white space is removed
+        - lower case and split the query string
+        - for each log message
+            - for each query after split
+                - if not found as a substring of a string in tags, remove this log message
+        - down side: users have to spell correctly.
+        - up side: maybe I don't have to worry about webworkers.
+        - based on fuse.js single character search, it'll probably be plenty fast.
 
 pause button for everyone - should require some threshold of players to activate (or admin), requires unianimous vote to resume (admin has extra button to force resume)
 
