@@ -6,10 +6,11 @@ var Stream = require("mithril/stream");
 var updates = Stream();
 
 var state = {
-    // is_admin: false, // TODO: is this even needed on the client?
+    // is_admin: false, // TODO: is this even needed on the client? Probably not, just an "admin_actions" which might be false
     actions: [
         [
             // TODO: this need to have a list of people that have voted for this person
+            // FIXME: these also need an id.
             {
                 selected: true,
                 name: "Kevin",
@@ -30,35 +31,25 @@ var state = {
 };
 
 function update_clobber(accumulator, update) {
-    let name = accumulator.name;
-    if (name in update) {
-        return {
-            name: name,
-            value: update[name]
-        };
-    }
-    return Stream.SKIP;
+    return update;
 }
 
 function update_append(accumulator, update) {
-    let name = accumulator.name;
-    if (name in update) {
-        accumulator.value.push(...update[name]);
-        accumulator.value.sort(function(a, b) {
-            return a.id - b.id;
-        });
-        return accumulator;
-    }
-    return Stream.SKIP;
+    accumulator.push(...update);
+    accumulator.sort(function(a, b) {
+        return a.id - b.id;
+    });
+    return accumulator;
 }
 
 function add_state_field(name, init, update_strategy) {
-    // TODO: map updates to only accept those with name as a key, then individuals can forget their own name
-    // maybe even move everything out of the state object?
-    state[name] = Stream.scan(update_strategy, {
-        name: name,
-        value: init
-    }, updates).map(x => x.value);
+    state[name] = Stream.scan(update_strategy, init,
+        updates.map(function(update) {
+            if (name in update) {
+                return update[name];
+            }
+            return Stream.SKIP;
+        }));
     return state[name];
 }
 
@@ -137,21 +128,30 @@ var local_state = {
     log_search_query: Stream(''),
 
     searcher: new Worker('searcher.js'),
+    pending_search: {
+        version: -1
+    },
     search_id: 0,
     next_search_id: 1,
     log_search_result: Stream([]),
 };
 
-local_state.searcher.onmessage = function(e) {
-    let version = e.data[0];
-    let logs = e.data[1];
 
-    if (version < local_state.search_id) {
+function search_in_progress() {
+    return local_state.search_id + 1 < local_state.next_search_id;
+}
+
+local_state.searcher.onmessage = function(e) {
+    if (local_state.pending_search.version > e.data.version && local_state.pending_search.version > local_state.search_id) {
+        local_state.searcher.postMessage(local_state.pending_search);
+    }
+
+    if (e.data.version < local_state.search_id) {
         return;
     }
 
-    local_state.search_id = version;
-    local_state.log_search_result(logs);
+    local_state.search_id = e.data.version;
+    local_state.log_search_result(e.data.logs);
     local_state.log_offset = 0;
     m.redraw();
 };
@@ -165,7 +165,20 @@ var terminal_search_dispatcher = Stream.lift(function(logs, query) {
         return Stream.SKIP;
     }
 
-    local_state.searcher.postMessage([logs, query, local_state.next_search_id++]);
+    if (search_in_progress()) {
+        local_state.pending_search = {
+            logs: logs,
+            query: query,
+            version: local_state.next_search_id++
+        };
+    } else {
+        local_state.searcher.postMessage({
+            logs: logs,
+            query: query,
+            version: local_state.next_search_id++
+        });
+    }
+
     return Stream.SKIP;
 }, state.logs, local_state.log_search_query);
 
@@ -182,7 +195,6 @@ ws.onmessage = function(e) {
     // FIXME: it would be good to log state here for debugging, but need to show actual values not stream objects
 
     /* FIXME: add update_strategy's for these
-    // append
     // versioned
     for (let key in data.versioned) {
         if (data.versioned[key].version > state[key].version) {
@@ -190,7 +202,6 @@ ws.onmessage = function(e) {
         }
     }
     */
-
 
     m.redraw();
 };
@@ -231,6 +242,7 @@ function view_log_msg(l) {
         case "night":
             time_of_day_icon = m("i.fas.fa-moon");
             break;
+            // TODO: dusk
         default:
             time_of_day_icon = m("i.fas.fa-question");
             break;
@@ -311,7 +323,7 @@ function paginator(row_count) {
         };
     }
 
-    return m("nav.pagination[role=navigation]", [ // TODO
+    return m("nav.pagination[role=navigation]", [
         m("a.pagination-previous", prev_button_attrs, "Previous"),
         m("a.pagination-next", next_button_attrs, "Next"),
         m("ul.pagination-list", items),
@@ -319,24 +331,21 @@ function paginator(row_count) {
 }
 
 function log_column() {
-    // TODO: we could filter messages with fuse here on every render, but that's pretty brutal. should really only refilter when we get a new message or the search changes
     return [
-        // TODO: don't show all messages, use: https://bulma.io/documentation/components/pagination/
         m(".field", [
             m(".control.has-icons-left", [
                 m("input.input[type=text][placeholder=Search]", {
-                    class: local_state.search_id + 1 < local_state.next_search_id ? "is-danger" : "",
+                    class: search_in_progress() ? "is-danger" : "",
                     oninput: function(e) {
                         local_state.log_search_query(e.target.value);
                     },
                 }),
                 m("span.icon.is-left", m("i.fas.fa-search")),
             ]),
-            // TODO: if there's text here, add an X on the right to clear it
+            // TODO: if there's text here, add an X on the right to clear it. I don't know how to make an icon in an input clickable.
         ]),
 
         m("table.table.log-table.is-hoverable.is-fullwidth",
-            // FIXME: need to traverse the list backwards
             m("tbody", log_rows_page(local_state.log_search_result()))),
 
         paginator(local_state.log_search_result().length),
@@ -388,7 +397,7 @@ function reaction_voter(actions) {
     return m("table.table.log-table.is-hoverable.is-fullwidth", // if we keep using log-table, rename it.
         m("thead", m("tr", [
             m("th[colspan=2]", "Villager Hanging"),
-            // TODO: Rename these to '(Strong|) (Ignore|Select)' so they work for angels too
+            // TODO: Rename these to '(Strong|) (Ignore|Select)' so they work for angels too. Maybe reverse colors?
             m("th.has-text-centered", {
                 "data-tooltip": "Strong save"
             }, "S+"),

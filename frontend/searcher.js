@@ -1,13 +1,13 @@
 var Fuse = require("fuse.js/dist/fuse.common.js");
 
 onmessage = function(e) {
-    let logs = e.data[0];
-    let query = e.data[1];
-    let version = e.data[2];
-    let fuse = new Fuse(logs, {
+    let fuse = new Fuse(e.data.logs, {
         useExtendedSearch: true,
         shouldSort: false,
         keys: ['tags'],
     });
-    postMessage([version, fuse.search(query).map(x => x.item)]);
+    postMessage({
+        version: e.data.version,
+        logs: fuse.search(e.data.query).map(x => x.item)
+    });
 };
