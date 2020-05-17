@@ -2,6 +2,8 @@ import html
 
 from collections import namedtuple
 
+from witchhunt.configuregame import ConfigureGame
+
 Connection = namedtuple("Connection", ["address", "username", "password", "is_admin"])
 Message = namedtuple("Message", ["address", "update", "close"], defaults=[{}, False])
 
@@ -9,12 +11,20 @@ Message = namedtuple("Message", ["address", "update", "close"], defaults=[{}, Fa
 class Lobby:
     def __init__(self):
         self.name = None
-        self.connections = {}
-        self.accepting_users = True
         self.address_lookup = {}
+        self.accepting_users = True
+        self.backend = ConfigureGame(self)
+        self.version_counter = 0
 
     def __repr__(self):
-        return f"{self.name=} {self.accepting_users=} {self.connections=}"
+        return f"{self.name=} {self.accepting_users=} {self.address_lookup=}"
+
+    def version(self):
+        self.version_counter += 1
+        return self.version_counter
+
+    def connections(self):
+        return list(self.address_lookup.values())
 
     def login(self, address, lobby=None, username=None, password=None):
         """
@@ -46,10 +56,9 @@ class Lobby:
             return None, messages
 
         def finish():
-            self.connections[username] = Connection(
+            self.address_lookup[address] = Connection(
                 address, username, password, is_admin
             )
-            self.address_lookup[address] = self.connections[username]
             # TODO: add message to everyone that someone has joined the lobby
             # TODO: update admin panel
             # TODO: update game selection actions (admin and non-admin)
@@ -82,27 +91,33 @@ class Lobby:
         if any((lobby_error, username_error, password_error)):
             return error()
 
-        if not self.connections:
+        if not self.address_lookup:
             # This is the first connection. Any username/password is valid.
             self.name = lobby  # Needs to be set lazily because defaultdict is dumb
             is_admin = True
             return finish()
 
-        if username not in self.connections:
+        previous_login = [c for c in self.connections() if c.username == username]
+        if not previous_login:
             if self.accepting_users:
+                # FIXME: notify the backend a player has joined
                 return finish()
             else:
                 lobby_error = "Game in progress, not accepting new users"
                 return error()
 
-        if self.connections[username].password != password:
+        assert len(previous_login) == 1
+        previous_login = previous_login[0]
+
+        if previous_login.password != password:
             password_error = "Incorrect password or username already taken"
             return error()
 
         # Notify the existing connection that it is being disconnected
+        del self.address_lookup[previous_login.address]
         messages.append(
             Message(
-                self.connections[username].address,
+                previous_login.address,
                 close="Connected from another device",
             )
         )
@@ -114,4 +129,11 @@ class Lobby:
 
         Returns a [Message]
         """
+        # FIXME: what do we do if the address isn't actually in this lobby? Shouldn't happen, but.
         sender = self.address_lookup[address]
+        # Yikes. Should validate action is a value I expect.
+        return getattr(self.backend, action, self._invalid_action)(client=client, **data)
+
+    def _invalid_action(self, client, **kwargs):
+        # TODO: notify the user something went wrong? disconnect them?
+        return []

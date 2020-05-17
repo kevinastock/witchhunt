@@ -7,6 +7,8 @@ var updates = Stream();
 
 var state = {
     // is_admin: false, // TODO: is this even needed on the client? Probably not, just an "admin_actions" which might be false
+    // Actually this seems like a good thing, then the client can decide if game config should display as editable.
+
     actions: [
         [
             // TODO: this need to have a list of people that have voted for this person
@@ -136,6 +138,11 @@ var local_state = {
     log_search_result: Stream([]),
 };
 
+// Attach state to window for debugging since parcel hides it
+window.wh = {
+    state: state,
+    local: local_state,
+};
 
 function search_in_progress() {
     return local_state.search_id + 1 < local_state.next_search_id;
