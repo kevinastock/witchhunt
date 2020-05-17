@@ -36,9 +36,7 @@ async def witchhunt_connection(websocket, path):
                     instance = LOBBIES[data.get("lobby")]
                     lobby, messages = instance.login(websocket, **data)
             else:
-                # TODO: I think the rest of the calls can delegate to the lobby
-                # which can manage dispatching json to functions
-                logging.error("unsupported event: %s, %s", action, data)
+                messages = lobby.event(action, data)
 
             if messages:
                 await asyncio.wait([websocket_send(msg) for msg in messages])

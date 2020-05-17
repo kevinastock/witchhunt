@@ -209,6 +209,7 @@ ws.onmessage = function(e) {
 ws.onclose = function(e) {
     // This is also closed if the connection can't be established, so that's good
     // FIXME: notify the user that they're disconnected
+    console.log(e.reason);
     m.redraw();
 };
 

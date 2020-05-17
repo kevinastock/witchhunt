@@ -1,3 +1,5 @@
+import html
+
 from collections import namedtuple
 
 Connection = namedtuple("Connection", ["address", "username", "password", "is_admin"])
@@ -9,6 +11,7 @@ class Lobby:
         self.name = None
         self.connections = {}
         self.accepting_users = True
+        self.address_lookup = {}
 
     def __repr__(self):
         return f"{self.name=} {self.accepting_users=} {self.connections=}"
@@ -18,6 +21,8 @@ class Lobby:
         A bit special, this method returns (lobby, messages) so the top level function
         can associate this address with a lobby.
         """
+        username = html.escape(username)
+
         messages = []
 
         lobby_error = "" if lobby else "Required"
@@ -44,6 +49,7 @@ class Lobby:
             self.connections[username] = Connection(
                 address, username, password, is_admin
             )
+            self.address_lookup[address] = self.connections[username]
             # TODO: add message to everyone that someone has joined the lobby
             # TODO: update admin panel
             # TODO: update game selection actions (admin and non-admin)
@@ -60,6 +66,18 @@ class Lobby:
                 )
             )
             return self, messages
+
+        if any((lobby_error, username_error, password_error)):
+            return error()
+
+        if len(username) > 12:
+            username_error = "Too long"
+
+        if len(lobby) > 10:
+            lobby_error = "Too long"
+
+        if lobby != html.escape(lobby):
+            lobby_error = "No html characters"
 
         if any((lobby_error, username_error, password_error)):
             return error()
@@ -89,3 +107,11 @@ class Lobby:
             )
         )
         return finish()
+
+    def event(self, address, action, data):
+        """
+        A message from client `address`.
+
+        Returns a [Message]
+        """
+        sender = self.address_lookup[address]
