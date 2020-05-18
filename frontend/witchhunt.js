@@ -93,18 +93,13 @@ for (var i = 0; i < 5000; i++) {
     //  msg: `<span data-tooltip="foo,bar,baz">Hello World</span>`,
     let tod = ["day", "night"][Math.floor(Math.random() * 2)];
     let foobar = makeid(3);
-    let secret = Math.random() >= 0.5;
-    let tags = [tod, foobar];
-    if (secret) {
-        tags.push("secret");
-    } else {
-        tags.push("public");
-    }
+    let visibility = Math.random() >= 0.5 ? "secret" : "public";
+    let tags = [tod, foobar, visibility];
 
     stupid_test_data.push({
         id: i,
-        msg: '<span data-tooltip="Hello Kevin">' + foobar + '</span>',
-        secret: secret,
+        message: '<span data-tooltip="Hello Kevin">' + foobar + '</span>',
+        visibility: visibility,
         time_of_day: tod,
         day: i,
         tags: tags,
@@ -136,6 +131,8 @@ var local_state = {
     search_id: 0,
     next_search_id: 1,
     log_search_result: Stream([]),
+
+    seq_id: 1,
 };
 
 // Attach state to window for debugging since parcel hides it
@@ -220,10 +217,11 @@ ws.onclose = function(e) {
     m.redraw();
 };
 
-function send(action, data) {
+function send(action, data, seq_id = -1) {
     ws.send(JSON.stringify({
         action: action,
         data: data,
+        seq_id: seq_id,
     }));
 }
 
@@ -256,11 +254,32 @@ function view_log_msg(l) {
             break;
     }
 
+    var visibility_icon;
+    switch(l.visibility) {
+        case "public":
+            visibility_icon = null;
+            break;
+        case "secret":
+            visibility_icon = m("i.fas.fa-user-secret");
+            break;
+        case "angel":
+            // FIXME
+            visibility_icon = null;
+            break;
+        case "demon":
+            // FIXME
+            visibility_icon = null;
+            break;
+        default:
+            time_of_day_icon = m("i.fas.fa-question");
+            break;
+    }
+
     return m("tr", {
         key: l.id
     }, [
-        m("td", m("span.icon.is-small", l.secret ? m("i.fas.fa-user-secret") : null)), // Make sure to always print the span.icon so the space is filled even if no rows are private
-        m("td", m.trust(l.msg)),
+        m("td", m("span.icon.is-small", visibility_icon)), // Make sure to always print the span.icon so the space is filled even if no rows are private
+        m("td", m.trust(l.message)),
         m("td.has-text-grey-light", m("span.icon", time_of_day_icon)),
         m("td.has-text-grey-light", l.day),
     ]);

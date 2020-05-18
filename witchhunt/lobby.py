@@ -1,30 +1,29 @@
 import html
+import secrets
 
-from collections import namedtuple
+from collections import defaultdict
 
 from witchhunt.configuregame import ConfigureGame
-
-Connection = namedtuple("Connection", ["address", "username", "password", "is_admin"])
-Message = namedtuple("Message", ["address", "update", "close"], defaults=[{}, False])
+from witchhunt.message import Message
+from witchhunt.player import Player
 
 
 class Lobby:
     def __init__(self):
         self.name = None
-        self.address_lookup = {}
+        self.players = []
         self.accepting_users = True
         self.backend = ConfigureGame(self)
-        self.version_counter = 0
+        self.seq_id = 0
+        self.button_callbacks = {}
+        self.components = defaultdict(set)
 
     def __repr__(self):
-        return f"{self.name=} {self.accepting_users=} {self.address_lookup=}"
+        return f"{self.name=} {self.accepting_users=} {self.players=}"
 
-    def version(self):
-        self.version_counter += 1
-        return self.version_counter
-
-    def connections(self):
-        return list(self.address_lookup.values())
+    def seq(self):
+        self.seq_id += 1
+        return self.seq_id
 
     def login(self, address, lobby=None, username=None, password=None):
         """
@@ -55,13 +54,18 @@ class Lobby:
             )
             return None, messages
 
-        def finish():
-            self.address_lookup[address] = Connection(
-                address, username, password, is_admin
-            )
-            # TODO: add message to everyone that someone has joined the lobby
-            # TODO: update admin panel
-            # TODO: update game selection actions (admin and non-admin)
+        def finish(previous_login=None):
+            # Notify the existing player that it is being disconnected
+            if previous_login:
+                messages.extend(previous_login.update_address(address))
+            else:
+                messages.extend(self.backend.player_join(username, is_admin))
+                # TODO: add message to everyone that someone has joined the lobby
+                # TODO: update admin panel
+                # TODO: update game selection actions (admin and non-admin)
+                self.players.append(Player(
+                    address, username, password, is_admin, self
+                ))
             messages.append(
                 Message(
                     address,
@@ -91,13 +95,13 @@ class Lobby:
         if any((lobby_error, username_error, password_error)):
             return error()
 
-        if not self.address_lookup:
-            # This is the first connection. Any username/password is valid.
+        if not self.players:
+            # This is the first player. Any username/password is valid.
             self.name = lobby  # Needs to be set lazily because defaultdict is dumb
             is_admin = True
             return finish()
 
-        previous_login = [c for c in self.connections() if c.username == username]
+        previous_login = [p for p in self.players if p.username == username]
         if not previous_login:
             if self.accepting_users:
                 # FIXME: notify the backend a player has joined
@@ -113,27 +117,33 @@ class Lobby:
             password_error = "Incorrect password or username already taken"
             return error()
 
-        # Notify the existing connection that it is being disconnected
-        del self.address_lookup[previous_login.address]
-        messages.append(
-            Message(
-                previous_login.address,
-                close="Connected from another device",
-            )
-        )
-        return finish()
+        return finish(previous_login)
 
-    def event(self, address, action, data):
-        """
-        A message from client `address`.
+    def click_button(self, address, field, value, client_seq_id):
+        # value is needed here because we don't want to blindly toggle the callback,
+        # we should have the user say what they expect to happen
+        ret = []
+        try:
+            callback = self.button_callbacks[field]
+            ret.append(Message(address, {
+                "seq_id_seen": client_seq_id,
+                }))
+        except KeyError:
+            return ret
 
-        Returns a [Message]
-        """
-        # FIXME: what do we do if the address isn't actually in this lobby? Shouldn't happen, but.
-        sender = self.address_lookup[address]
-        # Yikes. Should validate action is a value I expect.
-        return getattr(self.backend, action, self._invalid_action)(client=client, **data)
+        ret.extend(callback(value))
+        return ret
 
-    def _invalid_action(self, client, **kwargs):
-        # TODO: notify the user something went wrong? disconnect them?
-        return []
+    def create_button(self, component, callback):
+        while True:
+            private_id = secrets.token_hex(6)
+            if private_id not in self.button_callbacks:
+                break
+        self.button_callbacks[private_id] = callback
+        self.components[component].add(private_id)
+        return private_id
+
+    def destroy_component(self, component):
+        for private_id in self.components[component]:
+            del self.button_callbacks[private_id]
+        del self.components[component]

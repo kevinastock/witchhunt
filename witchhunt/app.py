@@ -26,6 +26,7 @@ async def witchhunt_connection(websocket, path):
             msg = json.loads(message)
             action = msg["action"]
             data = msg["data"]
+            seq_id = msg["seq_id"]
 
             messages = []
 
@@ -35,14 +36,20 @@ async def witchhunt_connection(websocket, path):
                 else:
                     instance = LOBBIES[data.get("lobby")]
                     lobby, messages = instance.login(websocket, **data)
+            elif action == "button":
+                messages = lobby.click_button(websocket, seq_id=seq_id, **data)
             else:
-                messages = lobby.event(action, data)
+                raise Exception(f"Unexpected request from user: {message}")
 
             if messages:
+                # TODO: is it worth trying to group updates to a single user?
+                # Unfortunately requires a lot of knowledge about how that data
+                # is merged which isn't here.
                 await asyncio.wait([websocket_send(msg) for msg in messages])
 
     finally:
         # TODO: anything to do here? lobby doesn't actually lose player on ws close
+        # but we should probably notify it so it can let other players know this person is offline
         # await connection.unregister(lobby)
         pass
 
