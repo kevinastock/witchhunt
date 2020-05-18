@@ -65,47 +65,22 @@ https://github.com/FortAwesome/Font-Awesome/wiki/Customize-Font-Awesome
 How can we handle partial updates to nested data? maybe use https://www.npmjs.com/package/jsonpath ? that's a bit heavy weight for what I need
 maybe all object updates should be deep merges like https://github.com/TehShrike/deepmerge ?
 it'd be nice if such a solution were deeply integrated with streams so that there's, e.g., a stream for reactions to a given player, and a stream for the local decision, which can be combined for the view
-
-
-It'd be really neat if anything could just register a button with the lobbby,
-and all events go through that. Each time we setup a component, we create all
-the buttons (which are specific per user) and bind callbacks to those buttons
-in lobby. Lobby also keeps track of which component created a button, and when
-that component is manually destroied, those callbacks are removed.
-
-
-```
-def register(creator, callback):
-    ...
-    return new_id
-
-def destroy_component(creator):
-    ...
-
-
-
-elsewhere...
-
-def react(value):
-    set_something
-    return True # to indicate this component has changed
-
-def component_update():
-    return [Message]
-
-finally....
-
-button_id = register(self, react)
-```
-
-Potentially, register is smart enough to track the client_version of each
-button. As part of handling a button event, it notifies the user that button
-event has been handled. Components don't need to track version info at all, and
-the client has a path to easily getting zero lag buttons
-
-
-How do I keep track of everything a user knows incase they reconnect? Need to
-record all of the log, and also be able to find all components that belong to
-them.
+    - Using the buttons & components setup, we can have the component (a nested structure) defined once when it's created, mutable parts of it are all stored in a flat set of items that are each versioned and referenced by the component
 
 Once we're past login, I think everything is `n Choose r` or one click action.
+If everything can be structured this way, the client could pretty easily
+simulate the server and keep lag from being visible.
+
+```
+import asyncio
+
+def foobar(msg="Hi"):
+    print(msg)
+    asyncio.get_running_loop().call_later(1, foobar, msg + ".")
+
+async def main():
+    foobar("Hello")
+    await asyncio.sleep(10)
+
+asyncio.run(main())
+```
