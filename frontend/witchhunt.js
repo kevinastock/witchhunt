@@ -9,6 +9,53 @@ var state = {
     // is_admin: false, // TODO: is this even needed on the client? Probably not, just an "admin_actions" which might be false
     // Actually this seems like a good thing, then the client can decide if game config should display as editable.
 
+    choosers: { // FIXME: This should be a Map
+        // Created as ([], -1, -1) when the component is created, if it doesn't exist already.
+        // Deleted when the component is deleted (but not when the component is replaced
+        // If a local_state.choosers with the same id exists, and a higher client_seq_id than seen_client_seq_id, use selected from there instead
+        "foobar_id": {
+            selected: [],
+            server_seq_id: 1234,
+            seen_client_seq_id: -1,
+        },
+    },
+
+    components: [ // FIXME: Should components be an array or a map?
+        {
+            choosers: { // FIXME: This should be a Map. How dowe have the server encode that? Send as Array with key inside, and covert to a map client side?
+            },
+            server_seq_id: 17,
+            type: "REACTION_VOTER", // One of INSTANTS, SELECTOR, REACTION_VOTER
+            // The rest of the fields are dependent on type. Most complicated is REACTION_VOTER, so here it is:
+
+            icon: "skull", // The icon to show on the left, probably shouldn't literally be font-awesome, but whatever. skull(hang/witch)/shield(angels)/random(demons)
+            rows: { // A refernce to a chooser specified above, populates the main column of names with .choices
+                key: "foobar_id",
+                selectors: ["button_code_0", "button_code_1", "button_code_2", "button_code_3"], // Only present on choosers you can interact with
+                choices: ["adam", "kevin", "owen", "sam"],
+                max_selected: 1,
+            },
+            reactions: [
+                [{
+                    /* from adam */
+                    key: "some_id",
+                    choices: ["strong no", "no", "yes", "strong yes"]
+                }, {
+                    /* from kevin */ }, ], // Reactions for adam as choice
+                [{
+                    /* from adam */
+                    key: "some_id",
+                    choices: ["strong no", "no", "yes", "strong yes"]
+                }, {
+                    /* from kevin */ }, ], // Reactions for kevin as choice
+            ],
+            // FIXME Might want an array for my reactions separately
+
+
+
+        },
+    ],
+
     actions: [
         [
             // TODO: this need to have a list of people that have voted for this person
@@ -255,7 +302,7 @@ function view_log_msg(l) {
     }
 
     var visibility_icon;
-    switch(l.visibility) {
+    switch (l.visibility) {
         case "public":
             visibility_icon = null;
             break;

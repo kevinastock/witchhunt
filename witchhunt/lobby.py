@@ -63,9 +63,7 @@ class Lobby:
                 # TODO: add message to everyone that someone has joined the lobby
                 # TODO: update admin panel
                 # TODO: update game selection actions (admin and non-admin)
-                self.players.append(Player(
-                    address, username, password, is_admin, self
-                ))
+                self.players.append(Player(address, username, password, is_admin, self))
             messages.append(
                 Message(
                     address,
@@ -125,9 +123,7 @@ class Lobby:
         ret = []
         try:
             callback = self.button_callbacks[field]
-            ret.append(Message(address, {
-                "seq_id_seen": client_seq_id,
-                }))
+            ret.append(Message(address, {"seq_id_seen": client_seq_id,}))
         except KeyError:
             return ret
 

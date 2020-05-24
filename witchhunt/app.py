@@ -48,8 +48,9 @@ async def witchhunt_connection(websocket, path):
                 await asyncio.wait([websocket_send(msg) for msg in messages])
 
     finally:
-        # TODO: anything to do here? lobby doesn't actually lose player on ws close
-        # but we should probably notify it so it can let other players know this person is offline
+        # TODO: anything to do here? lobby doesn't actually lose player on ws
+        # close but we should probably notify it so it can let other players
+        # know this person is offline
         # await connection.unregister(lobby)
         pass
 
