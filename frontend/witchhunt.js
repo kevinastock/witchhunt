@@ -28,31 +28,30 @@ var state = {
             type: "REACTION_VOTER", // One of INSTANTS, SELECTOR, REACTION_VOTER
             // The rest of the fields are dependent on type. Most complicated is REACTION_VOTER, so here it is:
 
-            icon: "skull", // The icon to show on the left, probably shouldn't literally be font-awesome, but whatever. skull(hang/witch)/shield(angels)/random(demons)
-            rows: { // A refernce to a chooser specified above, populates the main column of names with .choices
-                key: "foobar_id",
-                selectors: ["button_code_0", "button_code_1", "button_code_2", "button_code_3"], // Only present on choosers you can interact with
-                choices: ["adam", "kevin", "owen", "sam"],
-                max_selected: 1,
-            },
-            reactions: [
-                [{
-                    /* from adam */
-                    key: "some_id",
-                    choices: ["strong no", "no", "yes", "strong yes"]
-                }, {
-                    /* from kevin */ }, ], // Reactions for adam as choice
-                [{
-                    /* from adam */
-                    key: "some_id",
-                    choices: ["strong no", "no", "yes", "strong yes"]
-                }, {
-                    /* from kevin */ }, ], // Reactions for kevin as choice
+            selected_icon: "skull", // The icon to show on the left, probably shouldn't literally be font-awesome, but whatever. skull(hang/witch)/shield(angels)/random(demons)
+            reaction_choices: ["strong avoid", "avoid", "select", "strong select"], // TODO: this probably get hard coded into reaction component?
+
+            my_selector_key: "some_id",
+            max_selected: 1,
+
+            rows: [{
+                    // Row for selecting Adam
+                    name: "Adam",
+                    selector_button: "id-of-my-selection-chooser",
+                    reactions: ["adam-react-to-adam", "kevin-react-to-adam"], // These need to be in the same order as people in `rows`
+                    my_reaction_key: "some_id", // FIXME: we can avoid the map lookup by replacing this field with the value from the map when a component is inited
+                    my_reaction_buttons: ["button1", "button2", "button3", "button4"],
+                    // reaction voter can just hard code max_selected = 1 for reactions
+                },
+                {
+                    // Row for selecting Adam
+                    name: "Kevin",
+                    selector_button: "id-of-my-selection-chooser",
+                    reactions: ["adam-react-to-kevin", "kevin-react-to-kevin"],
+                    my_reaction_key: "some_id",
+                    my_reaction_buttons: ["button1", "button2", "button3", "button4"],
+                },
             ],
-            // FIXME Might want an array for my reactions separately
-
-
-
         },
     ],
 
