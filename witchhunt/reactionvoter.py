@@ -46,11 +46,11 @@ class ReactionVoter:
         for reaction in self.reactions:
             reaction.append(
                 Chooser(
-                    lobby,
+                    self.lobby,
                     self.component,
                     REACTIONS,
                     SELECTABLE_REACTIONS,
-                    participants,
+                    self.participants,
                 )
             )
 

@@ -9,51 +9,60 @@ var state = {
     // is_admin: false, // TODO: is this even needed on the client? Probably not, just an "admin_actions" which might be false
     // Actually this seems like a good thing, then the client can decide if game config should display as editable.
 
-    choosers: { // FIXME: This should be a Map
-        // Created as ([], -1, -1) when the component is created, if it doesn't exist already.
-        // Deleted when the component is deleted (but not when the component is replaced
-        // If a local_state.choosers with the same id exists, and a higher client_seq_id than seen_client_seq_id, use selected from there instead
-        // When updated, server_seq_id and seen_client_seq_id are each set to the max of current and seen in the message. Selected is updated server_seq_id increases
-        "foobar_id": {
-            selected: [],
-            server_seq_id: 1234,
-            seen_client_seq_id: -1,
-        },
-    },
+    /*
+     * an entry in versioned data is like:
+     *
+     * "unique-id" => {
+     *      data: {},
+     *      server_seq_id: -1,
+     *      seen_client_seq_id: -1,
+     * }
+     *
+     * These include choosers and whole components like reaction voters.
+     *
+     * Choosers look like:
+     *      data: [],
+     *
+     * A reaction voter looks like
+     *
+     {
+        server_seq_id: 17,
+        type: "REACTION_VOTER", // One of INSTANTS, SELECTOR, REACTION_VOTER
+        // The rest of the fields are dependent on type. Most complicated is REACTION_VOTER, so here it is:
 
-    components: [ // FIXME: Should components be an array or a map?
-        {
-            server_seq_id: 17,
-            type: "REACTION_VOTER", // One of INSTANTS, SELECTOR, REACTION_VOTER
-            // The rest of the fields are dependent on type. Most complicated is REACTION_VOTER, so here it is:
+        selected_icon: "skull", // The icon to show on the left, probably shouldn't literally be font-awesome, but whatever. skull(hang/witch)/shield(angels)/random(demons)
+        reaction_choices: ["strong avoid", "avoid", "select", "strong select"], // TODO: this probably get hard coded into reaction component?
 
-            selected_icon: "skull", // The icon to show on the left, probably shouldn't literally be font-awesome, but whatever. skull(hang/witch)/shield(angels)/random(demons)
-            reaction_choices: ["strong avoid", "avoid", "select", "strong select"], // TODO: this probably get hard coded into reaction component?
+        my_selector_key: "some_id",
+        max_selected: 1,
 
-            my_selector_key: "some_id",
-            max_selected: 1,
+        // FIXME: don't be a dumbass. a players list is needed because the rows might not correspond to players
+        players: [ ... ],
 
-            rows: [{
-                    // Row for selecting Adam
-                    name: "Adam",
-                    selector_button: "id-of-my-selection-chooser",
-                    reactions: ["adam-react-to-adam", "kevin-react-to-adam"], // These need to be in the same order as people in `rows`
-                    my_reaction_key: "some_id", // FIXME: we can avoid the map lookup by replacing this field with the value from the map when a component is inited
-                    my_reaction_buttons: ["button1", "button2", "button3", "button4"],
-                    // reaction voter can just hard code max_selected = 1 for reactions
-                },
-                {
-                    // Row for selecting Adam
-                    name: "Kevin",
-                    selector_button: "id-of-my-selection-chooser",
-                    reactions: ["adam-react-to-kevin", "kevin-react-to-kevin"],
-                    my_reaction_key: "some_id",
-                    my_reaction_buttons: ["button1", "button2", "button3", "button4"],
-                },
-            ],
-        },
-    ],
+        rows: [{
+                // Row for selecting Adam
+                name: "Adam",
+                selector_button: "id-of-my-selection-chooser",
+                reactions: ["adam-react-to-adam", "kevin-react-to-adam"], // These need to be in the same order as people in `rows`
+                my_reaction_key: "some_id", // FIXME: we can avoid the map lookup by replacing this field with the value from the map when a component is inited
+                my_reaction_buttons: ["button1", "button2", "button3", "button4"],
+                // reaction voter can just hard code max_selected = 1 for reactions
+            },
+            {
+                // Row for selecting Adam
+                name: "Kevin",
+                selector_button: "id-of-my-selection-chooser",
+                reactions: ["adam-react-to-kevin", "kevin-react-to-kevin"],
+                my_reaction_key: "some_id",
+                my_reaction_buttons: ["button1", "button2", "button3", "button4"],
+            },
+        ],
+     },
+     */
+    versioned_data: new Map(),
 
+
+    // FIXME: This gets deleted asap - just here for dummy drawing of data before a real reaction voter is created.
     actions: [
         [
             // TODO: this need to have a list of people that have voted for this person
@@ -87,6 +96,28 @@ function update_append(accumulator, update) {
         return a.id - b.id;
     });
     return accumulator;
+}
+
+function update_versioned(accumulator, update) {
+    if (!accumulator.has(update.key)) {
+        accumulator.set(update.key, {
+            data: null,
+            server_seq_id: -1,
+            seen_client_seq_id: -1
+        });
+    }
+
+    // When updated, server_seq_id and seen_client_seq_id are each set to the max of current and seen in the message. data is updated iff server_seq_id increases
+    let item = accumulator.get(update.key);
+
+    if (update.server_seq_id > item.server_seq_id) {
+        item.data = update.data;
+        item.server_seq_id = update.data;
+    }
+
+    if ('seen_client_seq_id' in update) {
+        item.seen_client_seq_id = Math.max(item.seen_client_seq_id, update.seen_client_seq_id);
+    }
 }
 
 function add_state_field(name, init, update_strategy) {
@@ -128,9 +159,20 @@ add_state_field("login_messages", {
 
 add_state_field("logs", [], update_append);
 
+add_state_field("versioned_data", new Map(), update_versioned);
+// FIXME: document the special things that are versioned_data
+// * Most things in here will have uuid's because fuck it
+// * "components" is special: data is a list of strings that are other versioned data
+//   Each element of components is just a string which references an element in versioned_data.
+//   These are things that are drawn on screen, in the order specified here
+//   TODO: when drawing each of these in mithril, use the id here as the key
+// * "admin" or some such bullshit will be special, a list of components to draw when showing the admin screen. don't draw a link for it if it's empty
+//
+// FIXME: we need some way to nuke this map at the end of a game - or at least on logout
+
 // FIXME delete this shit.
 let stupid_test_data = [];
-for (var i = 0; i < 5000; i++) {
+for (var i = 0; i < 95; i++) {
     // TODO: things to add to log messages:
     //  * a list of people mentioned so fuse can tag search with higher weight
     //  * flag if this is private (would also be a good tag)
@@ -178,7 +220,31 @@ var local_state = {
     log_search_result: Stream([]),
 
     seq_id: 1,
+
+    versioned_data: new Map(),
 };
+
+function lookup_versioned(key) {
+    // If a local_state.versioned_data with the same id exists, and a higher client_seq_id than seen_client_seq_id, use data from there instead
+    if (!state.versioned_data.has(key)) {
+        // FIXME: what's the right thing to do here? Presumably we may lookup components before the server sends us any
+        return undefined;
+    }
+
+    let server_ver = state.versioned_data.get(key);
+
+    if (!local_state.versioned_data.has(key)) {
+        return server_ver.data;
+    }
+
+    let client_ver = local_state.versioned_data.get(key);
+
+    if (client_ver.sent_client_seq_id > server_ver.seen_client_seq_id) {
+        return client_ver.data;
+    }
+
+    return server_ver.data;
+}
 
 // Attach state to window for debugging since parcel hides it
 window.wh = {
