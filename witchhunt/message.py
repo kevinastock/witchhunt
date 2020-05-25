@@ -3,7 +3,7 @@ from enum import Enum
 
 
 # str for json encoding: https://stackoverflow.com/a/51976841/392880
-class V(str, Enum):
+class Visibility(str, Enum):
     PUBLIC = "public"
     SECRET = "secret"
     ANGEL = "angel"

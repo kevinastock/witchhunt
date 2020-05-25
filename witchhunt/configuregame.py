@@ -1,7 +1,7 @@
 from witchhunt.roles import roles
 
 # from witchhunt.teams import Team
-from witchhunt.message import V
+from witchhunt.message import Visibility as V
 
 # FIXME: move this to it's own file
 # FIXME: this needs to be based on the new buttons & components setup

@@ -13,6 +13,7 @@ var state = {
         // Created as ([], -1, -1) when the component is created, if it doesn't exist already.
         // Deleted when the component is deleted (but not when the component is replaced
         // If a local_state.choosers with the same id exists, and a higher client_seq_id than seen_client_seq_id, use selected from there instead
+        // When updated, server_seq_id and seen_client_seq_id are each set to the max of current and seen in the message. Selected is updated server_seq_id increases
         "foobar_id": {
             selected: [],
             server_seq_id: 1234,

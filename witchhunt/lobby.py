@@ -1,4 +1,5 @@
 import html
+import logging
 import secrets
 
 from collections import defaultdict
@@ -123,11 +124,11 @@ class Lobby:
         ret = []
         try:
             callback = self.button_callbacks[field]
-            ret.append(Message(address, {"seq_id_seen": client_seq_id,}))
         except KeyError:
+            logging.warning("Unknown button clicked: " + field)
             return ret
 
-        ret.extend(callback(value))
+        ret.extend(callback(value, address, client_seq_id))
         return ret
 
     def create_button(self, component, callback):
