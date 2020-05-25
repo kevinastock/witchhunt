@@ -1,6 +1,6 @@
 import html
 import logging
-import secrets
+import uuid
 
 from collections import defaultdict
 
@@ -132,10 +132,7 @@ class Lobby:
         return ret
 
     def create_button(self, component, callback):
-        while True:
-            private_id = secrets.token_hex(6)
-            if private_id not in self.button_callbacks:
-                break
+        private_id = uuid.uuid4().hex
         self.button_callbacks[private_id] = callback
         self.components[component].add(private_id)
         return private_id

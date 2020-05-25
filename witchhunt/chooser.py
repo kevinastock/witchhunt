@@ -1,4 +1,5 @@
 import logging
+import uuid
 
 from witchhunt.message import Message
 
@@ -9,13 +10,12 @@ class Chooser:
         self.max_selected = max_selected
         self.selected = []
         self.notify = list(notify)
-        # This is a dirty hack to get a unique string, this "button" is never be used
-        self.id = lobby.create_button(component, self.err)
+        self.id = uuid.uuid4().hex
         self.server_seq_id = 0  # lobby.seq()?
         self.buttons = []
 
         for i in range(choices_count):
-            self.buttons.append(self.select_factory(i))
+            self.buttons.append(lobby.create_button(component, self.select_factory(i)))
 
     def select_factory(self, choice):
         def select(value, setter_address, client_seq_id):
@@ -29,7 +29,7 @@ class Chooser:
                 self.selected.remove(choice)
                 return self.notify_players(setter_address, client_seq_id)
 
-            # This pretty didn't actually change anything, but we should still
+            # This action didn't actually change anything, but we should still
             # let the client know that we saw their button press so they can
             # see future changes
             return [
