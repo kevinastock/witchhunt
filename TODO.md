@@ -1,3 +1,10 @@
+Priority things to do:
+
+    * create the reaction voter on the server
+    * have configuration send a reaction voter for role selection
+    * front end handling of reaction voter
+
+
 * maybe add a header and collapse button at the top of each section? Then user can hide panes they don't want, which makes mobile nicer
     * probably need an icon to notify that something has changed.
 
@@ -5,15 +12,8 @@
 
 * use a modal for death actions? Use a modal for all (night?) actions?
 
-next up: two column layout:
-    1. search & logs (just a sequence of plain text message-body's) & pagination
-        * it'd be cool to have an age indicator (besides game phase) on messages. Live time counter might be distracting. Maybe an icon for 'recent' updates? (either based on physical time, or game phase)
-        * village hanging message: who died, how many votes, and everyone else that receieved votes (and how many) - tool tip on each person and number to see who all voted.
-        * danger for kills, warning for attempts, info notable stuff (e.g., ability activated), primary for private info, regular or dark for votes
-    2. Actions.
-        c. table can do it. not the _worst_ idea
-       Also need multiple sets of actions - witches have both witch kill and their own actions to perform
-        * probably good to put each action in a card - header explains what it's for, and then actions in the card content (but panels solve this nicely already...)
+* it'd be cool to have an age indicator (besides game phase) on messages. Live time counter might be distracting. Maybe an icon for 'recent' updates? (either based on physical time, or game phase)
+* village hanging message: who died, how many votes, and everyone else that receieved votes (and how many) - tool tip on each person and number to see who all voted.
 
 and extras:
     * mod modal: bunch of buttons for actions a mod can do - toggle pause, mod kills, others?
@@ -25,9 +25,7 @@ and extras:
         * This works but requires a some custom css to get the margins/padding to look sane, divs between rows, highlighting and I have no idea how to style the name and skull
     * does the text for longer log messages wrap correctly?
 
-
 Probably need to limit user names - long words cause table cells to keep growing and fuck with column sizes. 12ish characters is enough?
-
 
 * fuse.js
     - might need to turn threshold down some
@@ -70,17 +68,3 @@ it'd be nice if such a solution were deeply integrated with streams so that ther
 Once we're past login, I think everything is `n Choose r` or one click action.
 If everything can be structured this way, the client could pretty easily
 simulate the server and keep lag from being visible.
-
-```
-import asyncio
-
-def foobar(msg="Hi"):
-    print(msg)
-    asyncio.get_running_loop().call_later(1, foobar, msg + ".")
-
-async def main():
-    foobar("Hello")
-    await asyncio.sleep(10)
-
-asyncio.run(main())
-```
