@@ -1,5 +1,12 @@
 Priority things to do:
 
+    * Ok, so some of this is starting to feel like a mess on the server.
+        * Instead of accumulating messages from allover, let's have the lobby maintain copies of versioned data and logs.
+        * Lobby needs to be wired everywhere, but that was the case before.
+        * There are functions to update logs and versioned data (login probably gets to stay special), but the don't actually change the data
+        * instead they stage new versions of the data, when control gets back to a top level function in lobby, it knows what's changed
+            * the top level function prepares all the messages which app will distribute, and it applies the changes to the actual data model
+        * What's that data model look like? Should look _a lot_ like the client data models for sanity. Can use a lot more namedtuples I don't lose my mind.
     * create the reaction voter on the server
     * have configuration send a reaction voter for role selection
     * front end handling of reaction voter
