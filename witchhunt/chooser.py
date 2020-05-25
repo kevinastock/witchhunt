@@ -9,7 +9,7 @@ class Chooser:
         self.lobby = lobby
         self.max_selected = max_selected
         self.selected = []
-        self.notify = list(notify)
+        self.notify = notify  # Expect parent to modify this
         self.id = uuid.uuid4().hex
         self.server_seq_id = 0  # lobby.seq()?
         self.buttons = []

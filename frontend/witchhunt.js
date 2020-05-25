@@ -23,8 +23,6 @@ var state = {
 
     components: [ // FIXME: Should components be an array or a map?
         {
-            choosers: { // FIXME: This should be a Map. How dowe have the server encode that? Send as Array with key inside, and covert to a map client side?
-            },
             server_seq_id: 17,
             type: "REACTION_VOTER", // One of INSTANTS, SELECTOR, REACTION_VOTER
             // The rest of the fields are dependent on type. Most complicated is REACTION_VOTER, so here it is:
