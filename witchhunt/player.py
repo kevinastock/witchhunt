@@ -1,6 +1,3 @@
-from witchhunt.message import Message
-
-
 class Player:
     def __init__(self, address, username, password, is_admin, lobby):
         self.address = address
@@ -8,18 +5,16 @@ class Player:
         self.password = password
         self.is_admin = is_admin
         self.lobby = lobby
-        self._logs = []
+        self.logs = []
         self.components = {}  # FIXME: wtf should the type be here?
+        # a set of strings (uuids) of versioned data that the client needs to know about
 
     def update_address(self, address):
         previous = self.address
         self.address = address
-        ret = [
-            Message(previous, close="Connect from another device"),
-            Message(self.address, {"logs": self._logs}),
-        ]
-        # FIXME: send the new address everything it needs to know (log and components)
-        return ret
+        self.lobby.push_msg(previous, close="Connect from another device")
+        self.lobby.push_msg(address, {"logs": self.logs})
+        # FIXME: send the new address components
 
     def send_log(self, message, visibility, tags):
         # FIXME: add tags for visibility and time_of_day
@@ -34,5 +29,5 @@ class Player:
             "day": day,
             "tags": list(tags),
         }
-        self._logs.append(log)
-        return [Message(self.address, {"logs": [log]})]
+        self.logs.append(log)
+        self.lobby.push_msg(self.address, {"logs": [log]})

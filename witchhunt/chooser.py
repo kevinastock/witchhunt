@@ -1,8 +1,6 @@
 import logging
 import uuid
 
-from witchhunt.message import Message
-
 
 class Chooser:
     def __init__(self, lobby, component, choices_count, max_selected, notify):
@@ -32,26 +30,23 @@ class Chooser:
             # This action didn't actually change anything, but we should still
             # let the client know that we saw their button press so they can
             # see future changes
-            return [
-                Message(
-                    setter_address,
-                    {
-                        "chooser": {
-                            "chooser_id": self.id,
-                            "selected": self.selected,
-                            "server_seq_id": self.server_seq_id,
-                            "seen_client_seq_id": client_seq_id,
-                        },
+            self.lobby.push_msg(
+                setter_address,
+                {
+                    "chooser": {
+                        "chooser_id": self.id,
+                        "selected": self.selected,
+                        "server_seq_id": self.server_seq_id,
+                        "seen_client_seq_id": client_seq_id,
                     },
-                ),
-            ]
+                },
+            )
 
         return select
 
     def notify_players(self, setter_address, client_seq_id):
         self.server_seq_id = self.lobby.seq()
 
-        ret = []
         for player in self.notify:
             msg = {
                 "chooser": {
@@ -64,9 +59,7 @@ class Chooser:
             if player.address == setter_address:
                 msg["chooser"]["seen_client_seq_id"] = client_seq_id
 
-            ret.append(Message(player.address, msg))
-
-        return ret
+            self.lobby.push_msg(player.address, msg)
 
     def err(self, value):
         logging.warning("chooser id 'button' called")

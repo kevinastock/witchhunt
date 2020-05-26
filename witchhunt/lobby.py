@@ -11,13 +11,15 @@ from witchhunt.player import Player
 
 class Lobby:
     def __init__(self):
+        # so a lobby has a set of players
         self.name = None
         self.players = []
         self.accepting_users = True
         self.backend = ConfigureGame(self)
         self.seq_id = 0
         self.button_callbacks = {}
-        self.components = defaultdict(set)
+        self.components = defaultdict(set)  # FIXME: I don't like this thing
+        self.message_queue = []
 
     def __repr__(self):
         return f"{self.name=} {self.accepting_users=} {self.players=}"
@@ -26,6 +28,14 @@ class Lobby:
         self.seq_id += 1
         return self.seq_id
 
+    def push_msg(self, *args, **kwargs):
+        self.message_queue.append(Message(*args, **kwargs))
+
+    def dump_messages(self):
+        ret = self.message_queue
+        self.message_queue = []
+        return ret
+
     def login(self, address, lobby=None, username=None, password=None):
         """
         A bit special, this method returns (lobby, messages) so the top level function
@@ -33,51 +43,45 @@ class Lobby:
         """
         username = html.escape(username)
 
-        messages = []
-
         lobby_error = "" if lobby else "Required"
         username_error = "" if username else "Required"
         password_error = "" if password else "Required"
         is_admin = False
 
         def error():
-            messages.append(
-                Message(
-                    address,
-                    {
-                        "login_messages": {
-                            "lobby": lobby_error,
-                            "username": username_error,
-                            "password": password_error,
-                        },
+            self.push_msg(
+                address,
+                {
+                    "login_messages": {
+                        "lobby": lobby_error,
+                        "username": username_error,
+                        "password": password_error,
                     },
-                )
+                },
             )
-            return None, messages
+            return None, self.dump_messages()
 
         def finish(previous_login=None):
             # Notify the existing player that it is being disconnected
             if previous_login:
-                messages.extend(previous_login.update_address(address))
+                previous_login.update_address(address)
             else:
-                messages.extend(self.backend.player_join(username, is_admin))
+                self.backend.player_join(username, is_admin)
                 # TODO: add message to everyone that someone has joined the lobby
                 # TODO: update admin panel
                 # TODO: update game selection actions (admin and non-admin)
                 self.players.append(Player(address, username, password, is_admin, self))
-            messages.append(
-                Message(
-                    address,
-                    {
-                        "logged_in": {
-                            "lobby": lobby,
-                            "username": username,
-                            "password": password,
-                        },
+            self.push_msg(
+                address,
+                {
+                    "logged_in": {
+                        "lobby": lobby,
+                        "username": username,
+                        "password": password,
                     },
-                )
+                },
             )
-            return self, messages
+            return self, self.dump_messages()
 
         if any((lobby_error, username_error, password_error)):
             return error()
@@ -121,15 +125,14 @@ class Lobby:
     def click_button(self, address, field, value, client_seq_id):
         # value is needed here because we don't want to blindly toggle the callback,
         # we should have the user say what they expect to happen
-        ret = []
         try:
             callback = self.button_callbacks[field]
         except KeyError:
             logging.warning("Unknown button clicked: " + field)
-            return ret
+            return []
 
-        ret.extend(callback(value, address, client_seq_id))
-        return ret
+        callback(value, address, client_seq_id)
+        return self.dump_messages()
 
     def create_button(self, component, callback):
         private_id = uuid.uuid4().hex

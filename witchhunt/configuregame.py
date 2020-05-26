@@ -48,18 +48,14 @@ class ConfigureGame:
         self.handicap = None
 
     def player_join(self, username, is_admin):
-        ret = []
         # TODO: privately message the player a list of players
         # TODO: include a link to share with other players?
         # TODO: send actions to everyone
         for player in self.lobby.players:
             # message everyone else that this player has joined
-            ret.extend(
-                player.send_log(
-                    f"{username} has joined the lobby.", V.PUBLIC, [username]
-                )
+            player.send_log(
+                f"{username} has joined the lobby.", V.PUBLIC, [username]
             )
-        return ret
 
     # def set_advanced_rules(self, client, enabled):
     #    if client.is_admin:

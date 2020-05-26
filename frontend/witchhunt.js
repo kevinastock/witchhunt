@@ -168,6 +168,8 @@ add_state_field("versioned_data", new Map(), update_versioned);
 //   TODO: when drawing each of these in mithril, use the id here as the key
 // * "admin" or some such bullshit will be special, a list of components to draw when showing the admin screen. don't draw a link for it if it's empty
 //
+// FIXME: no no no no, no special strings in the versioned_data map because the server will have a hard time telling them apart. Instead
+// add fields to state for the special fields that are clobbered on login or any other time they need to be set (admin promotion).
 // FIXME: we need some way to nuke this map at the end of a game - or at least on logout
 
 // FIXME delete this shit.
