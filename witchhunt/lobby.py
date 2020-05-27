@@ -20,6 +20,7 @@ class Lobby:
         self.button_callbacks = {}
         self.components = defaultdict(set)  # FIXME: I don't like this thing
         self.message_queue = []
+        self.versioned_data = {}
 
     def __repr__(self):
         return f"{self.name=} {self.accepting_users=} {self.players=}"
@@ -123,6 +124,8 @@ class Lobby:
         return finish(previous_login)
 
     def click_button(self, address, field, value, client_seq_id):
+        # FIXME: update the player for address to have this new client_seq_id
+
         # value is needed here because we don't want to blindly toggle the callback,
         # we should have the user say what they expect to happen
         try:

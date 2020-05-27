@@ -1,5 +1,7 @@
 class Player:
     def __init__(self, address, username, password, is_admin, lobby):
+        # FIXME: need to add a field for the greatest client seq id we've seen
+        # for this client
         self.address = address
         self.username = username
         self.password = password
@@ -7,6 +9,7 @@ class Player:
         self.lobby = lobby
         self.logs = []
         self.components = {}  # FIXME: wtf should the type be here?
+        self.latest_client_seq_id = -1
         # a set of strings (uuids) of versioned data that the client needs to know about
 
     def update_address(self, address):

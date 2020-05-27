@@ -53,9 +53,7 @@ class ConfigureGame:
         # TODO: send actions to everyone
         for player in self.lobby.players:
             # message everyone else that this player has joined
-            player.send_log(
-                f"{username} has joined the lobby.", V.PUBLIC, [username]
-            )
+            player.send_log(f"{username} has joined the lobby.", V.PUBLIC, [username])
 
     # def set_advanced_rules(self, client, enabled):
     #    if client.is_admin:
