@@ -189,7 +189,7 @@ for (var i = 0; i < 95; i++) {
         id: i,
         message: '<span data-tooltip="Hello Kevin">' + foobar + '</span>',
         visibility: visibility,
-        time_of_day: tod,
+        day_phase: tod,
         day: i,
         tags: tags,
     });
@@ -330,6 +330,7 @@ ws.onclose = function(e) {
     m.redraw();
 };
 
+// FIXME: this is dumb, don't send seq_id at the top level
 function send(action, data, seq_id = -1) {
     ws.send(JSON.stringify({
         action: action,
@@ -353,17 +354,17 @@ function makeid(length) {
 }
 
 function view_log_msg(l) {
-    var time_of_day_icon;
-    switch (l.time_of_day) {
+    var day_phase_icon;
+    switch (l.day_phase) {
         case "day":
-            time_of_day_icon = m("i.fas.fa-sun");
+            day_phase_icon = m("i.fas.fa-sun");
             break;
         case "night":
-            time_of_day_icon = m("i.fas.fa-moon");
+            day_phase_icon = m("i.fas.fa-moon");
             break;
             // TODO: dusk
         default:
-            time_of_day_icon = m("i.fas.fa-question");
+            day_phase_icon = m("i.fas.fa-question");
             break;
     }
 
@@ -384,7 +385,7 @@ function view_log_msg(l) {
             visibility_icon = null;
             break;
         default:
-            time_of_day_icon = m("i.fas.fa-question");
+            day_phase_icon = m("i.fas.fa-question");
             break;
     }
 
@@ -393,7 +394,7 @@ function view_log_msg(l) {
     }, [
         m("td", m("span.icon.is-small", visibility_icon)), // Make sure to always print the span.icon so the space is filled even if no rows are private
         m("td", m.trust(l.message)),
-        m("td.has-text-grey-light", m("span.icon", time_of_day_icon)),
+        m("td.has-text-grey-light", m("span.icon", day_phase_icon)),
         m("td.has-text-grey-light", l.day),
     ]);
     // TODO: color for privacy icon?
