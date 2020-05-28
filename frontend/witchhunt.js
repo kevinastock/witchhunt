@@ -27,10 +27,10 @@ var state = {
      *
      {
         server_seq_id: 17,
-        type: "REACTION_VOTER", // One of INSTANTS, SELECTOR, REACTION_VOTER
+        type: "REACTION_VOTER", // One of INSTANTS, SELECTOR, REACTION_VOTER TODO: No selector - it just this with reactions disabled
         // The rest of the fields are dependent on type. Most complicated is REACTION_VOTER, so here it is:
 
-        selected_icon: "skull", // The icon to show on the left, probably shouldn't literally be font-awesome, but whatever. skull(hang/witch)/shield(angels)/random(demons)
+        icon: "skull", // The icon to show on the left, probably shouldn't literally be font-awesome, but whatever. skull(hang/witch)/shield(angels)/random(demons)
         reaction_choices: ["strong avoid", "avoid", "select", "strong select"], // TODO: this probably get hard coded into reaction component?
 
         my_selector_key: "some_id",
@@ -41,25 +41,25 @@ var state = {
 
         rows: [{
                 // Row for selecting Adam
-                name: "Adam",
-                selector_button: "id-of-my-selection-chooser",
+                choice: "Adam",
+                select_action: "id-of-my-selection-chooser",
                 reactions: ["adam-react-to-adam", "kevin-react-to-adam"], // These need to be in the same order as people in `rows`
-                my_reaction_key: "some_id", // FIXME: we can avoid the map lookup by replacing this field with the value from the map when a component is inited
-                my_reaction_buttons: ["button1", "button2", "button3", "button4"],
+                my_reaction_selector: "some_id", // FIXME: we can avoid the map lookup by replacing this field with the value from the map when a component is inited
+                my_reaction_actions: ["button1", "button2", "button3", "button4"],
                 // reaction voter can just hard code max_selected = 1 for reactions
             },
             {
                 // Row for selecting Adam
-                name: "Kevin",
-                selector_button: "id-of-my-selection-chooser",
+                choice: "Kevin",
+                select_action: "id-of-my-selection-chooser",
                 reactions: ["adam-react-to-kevin", "kevin-react-to-kevin"],
-                my_reaction_key: "some_id",
-                my_reaction_buttons: ["button1", "button2", "button3", "button4"],
+                my_reaction_selector: "some_id",
+                my_reaction_actions: ["button1", "button2", "button3", "button4"],
             },
         ],
      },
      */
-    versioned_data: new Map(),
+    versioned_data: new Map(), // TODO: can we make this a WeakMap?
 
 
     // FIXME: This gets deleted asap - just here for dummy drawing of data before a real reaction voter is created.
@@ -92,6 +92,7 @@ function update_clobber(accumulator, update) {
 
 function update_append(accumulator, update) {
     accumulator.push(...update);
+    // TODO: short circuit sorting if we're only adding one element and it's id is greater than the previous last one
     accumulator.sort(function(a, b) {
         return a.id - b.id;
     });
@@ -112,12 +113,14 @@ function update_versioned(accumulator, update) {
 
     if (update.server_seq_id > item.server_seq_id) {
         item.data = update.data;
-        item.server_seq_id = update.data;
+        item.server_seq_id = update.server_seq_id;
     }
 
     if ('seen_client_seq_id' in update) {
         item.seen_client_seq_id = Math.max(item.seen_client_seq_id, update.seen_client_seq_id);
     }
+
+    return accumulator;
 }
 
 function add_state_field(name, init, update_strategy) {
@@ -170,6 +173,7 @@ add_state_field("versioned_data", new Map(), update_versioned);
 //
 // FIXME: no no no no, no special strings in the versioned_data map because the server will have a hard time telling them apart. Instead
 // add fields to state for the special fields that are clobbered on login or any other time they need to be set (admin promotion).
+// actually, on second thought this is fine. We're not tracking a set of all versioned_data on the server, so we can just push specific versioned data to each user
 // FIXME: we need some way to nuke this map at the end of a game - or at least on logout
 
 // FIXME delete this shit.
@@ -331,11 +335,10 @@ ws.onclose = function(e) {
 };
 
 // FIXME: this is dumb, don't send seq_id at the top level
-function send(action, data, seq_id = -1) {
+function send(action, data) {
     ws.send(JSON.stringify({
         action: action,
         data: data,
-        seq_id: seq_id,
     }));
 }
 
