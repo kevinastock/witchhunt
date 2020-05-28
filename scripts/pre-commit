@@ -1,15 +1,6 @@
 #!/bin/bash
 set -euf -o pipefail
 
-. envs/dev/bin/activate
-
-echo "black..."
-black witchhunt/
-
-echo ""
-echo "flake8..."
-flake8 witchhunt/
-
 echo ""
 echo "jslint..."
 yarn jshint -c .jshint frontend

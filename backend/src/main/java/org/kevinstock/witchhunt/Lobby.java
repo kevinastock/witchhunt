@@ -51,6 +51,8 @@ public class Lobby {
             }
             player.send("logged_in", new LoggedInMessage(this.name, username, password));
             // TODO: send the player a message with user/lobby/password?
+            // TODO: message everyone this player has joined the lobby.
+            // TODO: update the admin options
         }
     }
 
