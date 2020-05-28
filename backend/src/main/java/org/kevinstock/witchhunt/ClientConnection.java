@@ -2,6 +2,7 @@ package org.kevinstock.witchhunt;
 
 import com.google.gson.Gson;
 import org.java_websocket.WebSocket;
+import org.java_websocket.exceptions.WebsocketNotConnectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,10 +28,13 @@ public class ClientConnection {
     }
 
     public void send(String action, Object o) {
-        // TODO: I think send throws exceptions when conn is closed? Have this catch everything and just log problems?
         String msg = gson.toJson(Map.of(action, o));
         logger.info("Sending to [{}]: {}", conn.getRemoteSocketAddress(), msg);
-        conn.send(msg);
+        try {
+            conn.send(msg);
+        } catch (WebsocketNotConnectedException ignored) {
+            // If we can't send to someone, sucks for them. They'll get up to date data when they log back in.
+        }
     }
 
     public void close(String message) {
