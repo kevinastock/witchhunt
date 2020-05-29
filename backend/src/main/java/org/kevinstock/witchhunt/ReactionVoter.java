@@ -39,6 +39,8 @@ public class ReactionVoter implements UiComponent {
         this.writers = writers;
         this.showReactions = showReactions;
 
+        // TODO: if showReactions == false, don't setup all the reactions anyways
+
         // TODO: yea yea yea, this should really be two classes. idgaf right now
         if (writers != null) {
             sharedSelector = new Selector(lobby, choices.size(), maxSelected, this.participants);

@@ -24,7 +24,7 @@ public class Lobby {
             1000,
             new ArrayList<>(),
             new ArrayList<>(),
-            true);
+            false);
 
     public Lobby(String name) {
         this.name = name;

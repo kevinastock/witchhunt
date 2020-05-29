@@ -424,7 +424,7 @@ function view_log_msg(l) {
     return m("tr", {
         key: l.id
     }, [
-        m("td", m("span.icon.is-small", visibility_icon)), // Make sure to always print the span.icon so the space is filled even if no rows are private
+        m("td", m("span.icon", visibility_icon)), // Make sure to always print the span.icon so the space is filled even if no rows are private
         m("td", m.trust(l.message)),
         m("td.has-text-grey-light", m("span.icon", day_phase_icon)),
         m("td.has-text-grey-light", l.day),
@@ -596,6 +596,15 @@ function reaction(row, reaction_index, color) {
 
 function reaction_voter_row(voter, row, index) {
     let selected = lookup_versioned(voter.selector, []).includes(index);
+    let reactions = [];
+    if (voter.show_reactions) {
+        reactions = [
+            reaction(row, 0, "is-danger"),
+            reaction(row, 1, "is-warning"),
+            reaction(row, 2, "is-info"),
+            reaction(row, 3, "is-success"),
+        ];
+    }
     return m("tr", {
         onclick: function() {
             if ("select_action" in row) {
@@ -609,10 +618,7 @@ function reaction_voter_row(voter, row, index) {
         // FIXME: use icon from voter
         m("td", m("span.icon", selected ? m("i.fas.fa-skull") : null)), // Make sure to always print the span.icon so the space is filled even if no rows are selected
         m("td", row.choice), // TODO: strong if selected?
-        reaction(row, 0, "is-danger"),
-        reaction(row, 1, "is-warning"),
-        reaction(row, 2, "is-info"),
-        reaction(row, 3, "is-success"),
+        ...reactions,
     ]);
 }
 
