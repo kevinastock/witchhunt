@@ -75,3 +75,6 @@ it'd be nice if such a solution were deeply integrated with streams so that ther
 Once we're past login, I think everything is `n Choose r` or one click action.
 If everything can be structured this way, the client could pretty easily
 simulate the server and keep lag from being visible.
+
+
+Make footer a "sticky footer" - always at least at bottom of page.

@@ -1,11 +1,16 @@
 package org.kevinstock.witchhunt;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.IntStream;
 
 public class Selector {
+    private static final Logger logger = LoggerFactory.getLogger(Selector.class);
+
     private final List<Integer> selected = new ArrayList<>();
     private final List<Player> notify;
     private final String key = UUID.randomUUID().toString();
@@ -35,6 +40,7 @@ public class Selector {
     }
 
     private void select(Boolean value, int choice) {
+        logger.info("Setting {} @ {} to {}: was {}", key, choice, value, selected);
         if (value && !selected.contains(choice)) {
             selected.add(choice);
             if (selected.size() > maxSelected) {
@@ -43,25 +49,14 @@ public class Selector {
         } else if (!value) {
             selected.remove(Integer.valueOf(choice));
         }
+        logger.info("Now it's {}", selected);
 
         // Intentionally resend if selected is unchanged - we need to notify sending player that we saw their
         // client id. We could only send to the player that caused this action, but w/e.
-        for (Player player : notify) {
-            player.send("versioned_data", new SelectorMessage(key, selected, seqId++, player.getLatestClientSeqId()));
-        }
+        notify.forEach(this::notifyPlayer);
     }
 
-    private static class SelectorMessage {
-        private final String key;
-        private final List<Integer> selected;
-        private final long sever_seq_id;
-        private final long seen_client_seq_id;
-
-        private SelectorMessage(String key, List<Integer> selected, long sever_seq_id, long seen_client_seq_id) {
-            this.key = key;
-            this.selected = selected;
-            this.sever_seq_id = sever_seq_id;
-            this.seen_client_seq_id = seen_client_seq_id;
-        }
+    public void notifyPlayer(Player player) {
+        player.sendVersionedData(key, seqId++, selected);
     }
 }

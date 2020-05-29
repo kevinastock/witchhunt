@@ -3,7 +3,7 @@ package org.kevinstock.witchhunt;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class ReactionVoter {
+public class ReactionVoter implements UiComponent {
     private static final int DISTINCT_REACTIONS = 4;
     private static final int ALLOWED_REACTIONS = 1;
 
@@ -15,6 +15,7 @@ public class ReactionVoter {
     private final String note;
     private final List<Player> participants;
     private final List<Player> writers;
+    private final boolean showReactions;
 
     private final List<Map<Player, Selector>> reactions = new ArrayList<>();
     private final Selector sharedSelector;
@@ -24,11 +25,11 @@ public class ReactionVoter {
 
     // Each player votes independently
     public ReactionVoter(Lobby lobby, String title, String note, List<String> choices, int maxSelected, List<Player> participants) {
-        this(lobby, title, note, choices, maxSelected, participants, null);
+        this(lobby, title, note, choices, maxSelected, participants, null, true);
     }
 
     // All players alter the same selection (unless writers is empty)
-    public ReactionVoter(Lobby lobby, String title, String note, List<String> choices, int maxSelected, List<Player> participants, List<Player> writers) {
+    public ReactionVoter(Lobby lobby, String title, String note, List<String> choices, int maxSelected, List<Player> participants, List<Player> writers, boolean showReactions) {
         this.lobby = lobby;
         this.title = title;
         this.note = note;
@@ -36,10 +37,11 @@ public class ReactionVoter {
         this.maxSelected = maxSelected;
         this.participants = new ArrayList<>(); // Will be populated by addPlayer
         this.writers = writers;
+        this.showReactions = showReactions;
 
         // TODO: yea yea yea, this should really be two classes. idgaf right now
         if (writers != null) {
-            sharedSelector = new Selector(lobby, choices.size(), maxSelected, participants);
+            sharedSelector = new Selector(lobby, choices.size(), maxSelected, this.participants);
             votes = null;
         } else {
             sharedSelector = null;
@@ -61,7 +63,7 @@ public class ReactionVoter {
         }
 
         notifyPlayers();
-        player.addComponent(key);
+        player.addComponent(this);
     }
 
     public void addWriter(Player player) {
@@ -81,6 +83,26 @@ public class ReactionVoter {
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public String getKey() {
+        return key;
+    }
+
+    @Override
+    public void forceSend(Player player) {
+        if (votes != null) {
+            votes.values().forEach(x -> x.notifyPlayer(player));
+        } else {
+            sharedSelector.notifyPlayer(player);
+        }
+
+        for (Map<Player, Selector> reaction : reactions) {
+            reaction.values().forEach(x -> x.notifyPlayer(player));
+        }
+
+        notifyPlayer(player);
+    }
+
     private void notifyPlayers() {
         seqId++;
         participants.forEach(this::notifyPlayer);
@@ -97,6 +119,7 @@ public class ReactionVoter {
         private final String icon;
         private final String selector;
         private final boolean show_reactions;
+        private final int max_selected;
         private final List<ReactionVoterRowMessage> rows;
 
         public ReactionVoterMessage(Player player, ReactionVoter voter) {
@@ -109,8 +132,9 @@ public class ReactionVoter {
             } else {
                 selector = voter.sharedSelector.getKey();
             }
-            show_reactions = voter.participants.size() > 1;
+            show_reactions = voter.showReactions;
             rows = new ArrayList<>();
+            max_selected = voter.maxSelected;
 
             boolean isWriter = voter.writers != null && voter.writers.contains(player);
 

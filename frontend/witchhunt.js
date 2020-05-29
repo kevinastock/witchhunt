@@ -230,26 +230,55 @@ var local_state = {
     versioned_data: new Map(),
 };
 
-function lookup_versioned(key) {
+function lookup_versioned(key, missing = null) {
     // If a local_state.versioned_data with the same id exists, and a higher client_seq_id than seen_client_seq_id, use data from there instead
-    if (!state.versioned_data.has(key)) {
+    let in_state = state.versioned_data().has(key);
+    let in_local = local_state.versioned_data.has(key);
+    if (!in_state && !in_local) {
         // FIXME: what's the right thing to do here? Presumably we may lookup components before the server sends us any
-        return undefined;
-    }
+        // It kinda sucks to pass in missing, but it's not clear what type to expect.
+        return missing;
+    } else if (in_state && !in_local) {
+        return state.versioned_data().get(key).data;
+    } else if (!in_state && in_local) {
+        return local_state.versioned_data.get(key).data;
+    } else {
+        let server_ver = state.versioned_data().get(key);
+        let client_ver = local_state.versioned_data.get(key);
 
-    let server_ver = state.versioned_data.get(key);
+        if (client_ver.sent_client_seq_id > server_ver.seen_client_seq_id) {
+            return client_ver.data;
+        }
 
-    if (!local_state.versioned_data.has(key)) {
         return server_ver.data;
     }
+}
 
-    let client_ver = local_state.versioned_data.get(key);
+function click_selector(selector_key, btn, idx, value, max_selected) {
+    let data = lookup_versioned(selector_key, []).slice();
+    let client_seq_id = local_state.seq_id++;
 
-    if (client_ver.sent_client_seq_id > server_ver.seen_client_seq_id) {
-        return client_ver.data;
+    if (value && !data.includes(idx)) {
+        data.push(idx);
+        if (data.length > max_selected) {
+            data = data.slice(1);
+        }
+    } else if (!value && data.includes(idx)) {
+        data.splice(data.indexOf(idx), 1);
     }
 
-    return server_ver.data;
+    local_state.versioned_data.set(selector_key, {
+        sent_client_seq_id: client_seq_id,
+        data: data,
+    });
+
+    let msg = {
+        client_seq_id: client_seq_id,
+        key: btn,
+        value: value,
+    };
+
+    send("set", msg);
 }
 
 // Attach state to window for debugging since parcel hides it
@@ -496,69 +525,118 @@ function log_column() {
     ];
 }
 
-function reaction(votes, color) {
+function reaction_voter_header(voter) {
+    if (voter.show_reactions) {
+        return [
+            m("th[colspan=2]", voter.title),
+            // TODO: reverse colors
+            m("th.has-text-centered", {
+                "data-tooltip": "Strong No"
+            }, "N+"),
+            m("th.has-text-centered", {
+                "data-tooltip": "No"
+            }, "N"),
+            m("th.has-text-centered", {
+                "data-tooltip": "Yes"
+            }, "Y"),
+            m("th.has-text-centered", {
+                "data-tooltip": "Strong Yes"
+            }, "Y+"),
+        ];
+    } else {
+        return m("th[colspan=2]", voter.title);
+    }
+}
+
+function reaction_voter_footer(voter) {
+    if (voter.show_reactions) {
+        return m("th[colspan=6]", m("span.has-text-info.has-text-weight-normal", voter.note));
+    } else {
+        return m("th[colspan=2]", m("span.has-text-info.has-text-weight-normal", voter.note));
+    }
+}
+
+function reaction(row, reaction_index, color) {
+    // for (let [key, value] of Object.entries(yourobject)) {
+    //     console.log(key, value);
+    // }
+
+    var votes = [];
+
+    for (let [name, selector] of Object.entries(row.reactions)) {
+        if (lookup_versioned(selector, []).includes(reaction_index)) {
+            votes.push(name);
+        }
+    }
+
     var attrs = {};
     attrs["class"] = "";
+
+    let is_selected = lookup_versioned(row.my_reaction_selector, []).includes(reaction_index);
+    if (!is_selected) {
+        attrs["class"] += "is-light ";
+    }
+
     if (true) {
-        // TODO: don't do this if current user in votes
-        attrs["class"] += " is-light";
         // or this: attrs["class"] += " is-outlined"
         // TODO: is yellow for warning ok? kinda unreadable on white, esp w/ outlined
     }
     if (votes.length > 0) {
-        attrs["class"] += " " + color;
+        attrs["class"] += color;
         attrs["data-tooltip"] = votes.join(", ");
     }
 
     attrs.onclick = function(e) {
-        console.log("button pushed");
-        e.stopPropagation();
+        click_selector(row.my_reaction_selector, row.my_reaction_actions[reaction_index], reaction_index, !is_selected, 1);
+        e.stopPropagation(); // Don't click the row as well
     };
 
     return m("td", m("a.button", attrs, votes.length));
 }
 
-
-function vote_row(candidate) {
-    // FIXME: need a key on the tr's here
+function reaction_voter_row(voter, row, index) {
+    let selected = lookup_versioned(voter.selector, []).includes(index);
     return m("tr", {
         onclick: function() {
-            console.log("row clicked");
-        }
+            if ("select_action" in row) {
+                click_selector(voter.selector, row.select_action, index, !selected, voter.max_selected);
+            }
+        },
+        key: row.choice,
     }, [
         // This could show how people have actually voted, but that's kinda bullshit, because people can switch at the last moment
         // and for witch voting, they all share the vote they're casting
-        m("td", m("span.icon", candidate.selected ? m("i.fas.fa-skull") : null)), // Make sure to always print the span.icon so the space is filled even if no rows are selected
-        m("td", m.trust(candidate.name)), // strong if selected?
-        reaction(candidate.strong_save, "is-success"),
-        reaction(candidate.save, "is-info"),
-        reaction(candidate.kill, "is-warning"),
-        reaction(candidate.strong_kill, "is-danger"),
+        // FIXME: use icon from voter
+        m("td", m("span.icon", selected ? m("i.fas.fa-skull") : null)), // Make sure to always print the span.icon so the space is filled even if no rows are selected
+        m("td", row.choice), // TODO: strong if selected?
+        reaction(row, 0, "is-danger"),
+        reaction(row, 1, "is-warning"),
+        reaction(row, 2, "is-info"),
+        reaction(row, 3, "is-success"),
     ]);
 }
 
-function reaction_voter(actions) {
+function draw_reaction_voter(voter) {
     return m("table.table.log-table.is-hoverable.is-fullwidth", // if we keep using log-table, rename it.
-        m("thead", m("tr", [
-            m("th[colspan=2]", "Villager Hanging"),
-            // TODO: Rename these to '(Strong|) (Ignore|Select)' so they work for angels too. Maybe reverse colors?
-            m("th.has-text-centered", {
-                "data-tooltip": "Strong save"
-            }, "S+"),
-            m("th.has-text-centered", {
-                "data-tooltip": "Save"
-            }, "S"),
-            m("th.has-text-centered", {
-                "data-tooltip": "Kill"
-            }, "K"),
-            m("th.has-text-centered", {
-                "data-tooltip": "Strong Kill"
-            }, "K+"),
-        ])),
-        m("tbody", actions.map(vote_row)));
+        m("thead", m("tr", reaction_voter_header(voter))),
+        m("tfoot", m("tr", reaction_voter_footer(voter))),
+        m("tbody", voter.rows.map((row, index) => reaction_voter_row(voter, row, index)))
+    );
+}
+
+function draw_component(component) {
+    switch (component.type) {
+        case "REACTION_VOTER":
+            return draw_reaction_voter(component);
+            break;
+        default:
+            return m(".notification.is-danger", "Unknown component type " + component.type)
+    }
 }
 
 function actions_column() {
+    return lookup_versioned("components", []).map(lookup_versioned).map(draw_component);
+    /*
     return [
         reaction_voter(state.actions[0]),
         // TODO: box of buttons (collapsable?):
@@ -582,6 +660,7 @@ function actions_column() {
         //      - judge (modal only)
         //      - priest
     ];
+    */
 }
 
 function header() {

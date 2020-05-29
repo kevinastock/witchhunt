@@ -2,6 +2,7 @@ package org.kevinstock.witchhunt;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Player {
     private final List<LogMessage> logs = new ArrayList<>();
@@ -16,7 +17,7 @@ public class Player {
     private boolean isAdmin = false;
 
     // TODO: components should have a priority so this displays nicely
-    private List<String> components = new ArrayList<>();
+    private final List<UiComponent> components = new ArrayList<>();
 
     private ClientConnection client; // TODO: should this be a list of client?
 
@@ -42,6 +43,8 @@ public class Player {
         this.client.setPlayer(this);
 
         this.client.send("logs", logs);
+        components.forEach(c -> c.forceSend(this));
+        sendComponents();
         latestClientSeqId = 0; // TODO: or send client current value? needed if there's a list of clients.
     }
 
@@ -89,14 +92,27 @@ public class Player {
         isAdmin = admin;
     }
 
-    public void addComponent(String component) {
+    public void addComponent(UiComponent component) {
         components.add(component);
-        sendVersionedData("components", seqId++, components);
+        sendComponents();
     }
 
-    public void removeComponent(String component) {
+    public void removeComponent(UiComponent component) {
         components.remove(component);
-        sendVersionedData("components", seqId++, components);
+        sendComponents();
+    }
+
+    private void initComponents() {
+        for (UiComponent component : components) {
+        }
+    }
+
+    private void sendComponents() {
+        sendVersionedData(
+                "components",
+                seqId++,
+                components.stream().map(UiComponent::getKey).collect(Collectors.toList())
+        );
     }
 
     public void sendVersionedData(String key, long dataSeqId, Object data) {

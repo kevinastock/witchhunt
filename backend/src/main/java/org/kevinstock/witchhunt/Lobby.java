@@ -23,7 +23,8 @@ public class Lobby {
             List.of("Isabelle", "Sibylla", "Vesper", "Serafina", "Morgan", "Artemisia"),
             1000,
             new ArrayList<>(),
-            new ArrayList<>());
+            new ArrayList<>(),
+            true);
 
     public Lobby(String name) {
         this.name = name;
