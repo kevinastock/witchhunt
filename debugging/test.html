@@ -2,45 +2,47 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
-        <title>Why is bar shorter than foo?</title>
+        <title>empty span.icon in tables</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.2/css/bulma.min.css" integrity="sha256-qS+snwBgqr+iFVpBB58C9UCxKFhyL03YHpZfdNUhSEw=" crossorigin="anonymous">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/FortAwesome/Font-Awesome@5.13.0/css/all.css" integrity="sha256-2SjB4U+w1reKQrhbbJOiQFARkAXA5CGoyk559PJeG58=" crossorigin="anonymous">
     </head>
     <body>
         <table class="table">
             <tbody>
                 <tr>
+                    <td></td>
+                    <td></td>
+                </tr>
+
+                <tr>
                     <td>
-                        <span class="icon"></span>
+                        <span></span>
                     </td>
                     <td>
-                        Junk
+                        Empty span is short
                     </td>
                 </tr>
+
                 <tr>
                     <td>
                         <span class="icon"></span>
                     </td>
                     <td>
-                        Foo
+                        Empty span.icon is tall
                     </td>
                 </tr>
                 <tr>
                     <td>
-                        <span class="icon"><i class="fas fa-sun"></i></span>
+                        <span class="icon">x</span>
                     </td>
                     <td>
-                        Bar
+                        span.icon with contents is short
                     </td>
                 </tr>
+
                 <tr>
-                    <td>
-                        <span class="icon"></span>
-                    </td>
-                    <td>
-                        Junk
-                    </td>
+                    <td></td>
+                    <td></td>
                 </tr>
             </tbody>
         </table>
