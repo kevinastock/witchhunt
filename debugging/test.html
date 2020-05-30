@@ -1,75 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.2/css/bulma.min.css" integrity="sha256-qS+snwBgqr+iFVpBB58C9UCxKFhyL03YHpZfdNUhSEw=" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/FortAwesome/Font-Awesome@5.13.0/css/all.css" integrity="sha256-2SjB4U+w1reKQrhbbJOiQFARkAXA5CGoyk559PJeG58=" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma-extensions@6.2.7/bulma-tooltip/dist/css/bulma-tooltip.min.css" integrity="sha256-/kvxvJQXnJsZuNV3KCpmv5/gxlMsvu1xRn/wXpfAWjI=" crossorigin="anonymous">
-    <style>
-.log-table td:nth-child(2) {
-    width: 100%;
-}
-
-.table td {
-    vertical-align: middle;
-}
-    </style>
-</head>
-<body class="has-navbar-fixed-top">
-    <section class="section">
-        <div class="container">
-            <table class="table log-table is-hoverable is-fullwidth">
-                <div class="columns">
-                    <div class="column">
-                        <thead>
-                            <tr>
-                                <th colspan="2">Demo Header</th>
-                            </tr>
-                        </thead>
-                        <tfoot>
-                            <tr>
-                                <th colspan="2">Demo Footer</th>
-                            </tr>
-                        </tfoot>
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <span class="icon"></span>
-                                </td>
-                                <td>
-                                    Junk
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <span class="icon"></span>
-                                </td>
-                                <td>
-                                    Foo
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <span class="icon"><i class="fas fa-skull"></i></span>
-                                </td>
-                                <td>
-                                    Bar
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <span class="icon"></span>
-                                </td>
-                                <td>
-                                    Junk
-                                </td>
-                            </tr>
-                        </tbody>
-            </table>
-                    </div>
-                </div>
-        </div>
-    </section>
-</body>
+    <head>
+        <meta charset="utf-8">
+        <title>Why is bar shorter than foo?</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.2/css/bulma.min.css" integrity="sha256-qS+snwBgqr+iFVpBB58C9UCxKFhyL03YHpZfdNUhSEw=" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/FortAwesome/Font-Awesome@5.13.0/css/all.css" integrity="sha256-2SjB4U+w1reKQrhbbJOiQFARkAXA5CGoyk559PJeG58=" crossorigin="anonymous">
+    </head>
+    <body>
+        <table class="table">
+            <tbody>
+                <tr>
+                    <td>
+                        <span class="icon"></span>
+                    </td>
+                    <td>
+                        Junk
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <span class="icon"></span>
+                    </td>
+                    <td>
+                        Foo
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <span class="icon"><i class="fas fa-sun"></i></span>
+                    </td>
+                    <td>
+                        Bar
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <span class="icon"></span>
+                    </td>
+                    <td>
+                        Junk
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </body>
 </html>
