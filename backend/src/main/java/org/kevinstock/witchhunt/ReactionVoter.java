@@ -64,6 +64,10 @@ public class ReactionVoter implements UiComponent {
             votes.put(player, new Selector(lobby, choices.size(), maxSelected, List.of(player)));
         }
 
+        // need to send this player all the selectors for existing players in case they've selected something
+        // The notifyPlayers will duplicate the work of sending this component to this player, but whatever.
+        forceSend(player);
+
         notifyPlayers();
         player.addComponent(this);
     }

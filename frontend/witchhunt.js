@@ -5,86 +5,7 @@ var Stream = require("mithril/stream");
 
 var updates = Stream();
 
-var state = {
-    // is_admin: false, // TODO: is this even needed on the client? Probably not, just an "admin_actions" which might be false
-    // Actually this seems like a good thing, then the client can decide if game config should display as editable.
-
-    /*
-     * an entry in versioned data is like:
-     *
-     * "unique-id" => {
-     *      data: {},
-     *      server_seq_id: -1,
-     *      seen_client_seq_id: -1,
-     * }
-     *
-     * These include choosers and whole components like reaction voters.
-     *
-     * Choosers look like:
-     *      data: [],
-     *
-     * A reaction voter looks like
-     *
-     {
-        server_seq_id: 17,
-        type: "REACTION_VOTER", // One of INSTANTS, SELECTOR, REACTION_VOTER TODO: No selector - it just this with reactions disabled
-        // The rest of the fields are dependent on type. Most complicated is REACTION_VOTER, so here it is:
-
-        icon: "skull", // The icon to show on the left, probably shouldn't literally be font-awesome, but whatever. skull(hang/witch)/shield(angels)/random(demons)
-        reaction_choices: ["strong avoid", "avoid", "select", "strong select"], // TODO: this probably get hard coded into reaction component?
-
-        my_selector_key: "some_id",
-        max_selected: 1,
-
-        // FIXME: don't be a dumbass. a players list is needed because the rows might not correspond to players
-        players: [ ... ],
-
-        rows: [{
-                // Row for selecting Adam
-                choice: "Adam",
-                select_action: "id-of-my-selection-chooser",
-                reactions: ["adam-react-to-adam", "kevin-react-to-adam"], // These need to be in the same order as people in `rows`
-                my_reaction_selector: "some_id", // FIXME: we can avoid the map lookup by replacing this field with the value from the map when a component is inited
-                my_reaction_actions: ["button1", "button2", "button3", "button4"],
-                // reaction voter can just hard code max_selected = 1 for reactions
-            },
-            {
-                // Row for selecting Adam
-                choice: "Kevin",
-                select_action: "id-of-my-selection-chooser",
-                reactions: ["adam-react-to-kevin", "kevin-react-to-kevin"],
-                my_reaction_selector: "some_id",
-                my_reaction_actions: ["button1", "button2", "button3", "button4"],
-            },
-        ],
-     },
-     */
-    versioned_data: new Map(), // TODO: can we make this a WeakMap?
-
-
-    // FIXME: This gets deleted asap - just here for dummy drawing of data before a real reaction voter is created.
-    actions: [
-        [
-            // TODO: this need to have a list of people that have voted for this person
-            // FIXME: these also need an id.
-            {
-                selected: true,
-                name: "Kevin",
-                strong_save: ["a", "b", "c"],
-                save: ["d"],
-                kill: ["e"],
-                strong_kill: []
-            }, {
-                selected: false,
-                name: "Adam",
-                strong_save: ["a"],
-                save: ["d"],
-                kill: ["e"],
-                strong_kill: ["b", "c"]
-            },
-        ],
-    ],
-};
+var state = {};
 
 function update_clobber(accumulator, update) {
     return update;
@@ -164,16 +85,6 @@ add_state_field("logs", [], update_append);
 
 add_state_field("versioned_data", new Map(), update_versioned);
 // FIXME: document the special things that are versioned_data
-// * Most things in here will have uuid's because fuck it
-// * "components" is special: data is a list of strings that are other versioned data
-//   Each element of components is just a string which references an element in versioned_data.
-//   These are things that are drawn on screen, in the order specified here
-//   TODO: when drawing each of these in mithril, use the id here as the key
-// * "admin" or some such bullshit will be special, a list of components to draw when showing the admin screen. don't draw a link for it if it's empty
-//
-// FIXME: no no no no, no special strings in the versioned_data map because the server will have a hard time telling them apart. Instead
-// add fields to state for the special fields that are clobbered on login or any other time they need to be set (admin promotion).
-// actually, on second thought this is fine. We're not tracking a set of all versioned_data on the server, so we can just push specific versioned data to each user
 // FIXME: we need some way to nuke this map at the end of a game - or at least on logout
 
 // FIXME delete this shit.
@@ -225,7 +136,7 @@ var local_state = {
     next_search_id: 1,
     log_search_result: Stream([]),
 
-    seq_id: 1,
+    selector_seq_id: 1,
 
     versioned_data: new Map(),
 };
@@ -256,7 +167,7 @@ function lookup_versioned(key, missing = null) {
 
 function click_selector(selector_key, btn, idx, value, max_selected) {
     let data = lookup_versioned(selector_key, []).slice();
-    let client_seq_id = local_state.seq_id++;
+    let client_seq_id = local_state.selector_seq_id++;
 
     if (value && !data.includes(idx)) {
         data.push(idx);
@@ -341,18 +252,6 @@ ws.onmessage = function(e) {
     console.log(data);
 
     updates(data);
-
-    // FIXME: it would be good to log state here for debugging, but need to show actual values not stream objects
-
-    /* FIXME: add update_strategy's for these
-    // versioned
-    for (let key in data.versioned) {
-        if (data.versioned[key].version > state[key].version) {
-            state[key] = data.versioned[key];
-        }
-    }
-    */
-
     m.redraw();
 };
 
@@ -408,7 +307,7 @@ function view_log_msg(l) {
         case "secret":
             visibility_icon = m("i.fas.fa-user-secret");
             break;
-        case "angel":
+        case "angel": // FIXME: angle and demon could be merged as "death"
             // FIXME
             visibility_icon = null;
             break;
@@ -529,7 +428,6 @@ function reaction_voter_header(voter) {
     if (voter.show_reactions) {
         return [
             m("th[colspan=2]", voter.title),
-            // TODO: reverse colors
             m("th.has-text-centered", {
                 "data-tooltip": "Strong No"
             }, "N+"),
@@ -549,18 +447,10 @@ function reaction_voter_header(voter) {
 }
 
 function reaction_voter_footer(voter) {
-    if (voter.show_reactions) {
-        return m("th[colspan=6]", m("span.has-text-info.has-text-weight-normal", voter.note));
-    } else {
-        return m("th[colspan=2]", m("span.has-text-info.has-text-weight-normal", voter.note));
-    }
+    return m("th", {"colspan": voter.show_reactions ? 6 : 2}, m("span.has-text-info.has-text-weight-normal", voter.note));
 }
 
 function reaction(row, reaction_index, color) {
-    // for (let [key, value] of Object.entries(yourobject)) {
-    //     console.log(key, value);
-    // }
-
     var votes = [];
 
     for (let [name, selector] of Object.entries(row.reactions)) {
@@ -577,10 +467,6 @@ function reaction(row, reaction_index, color) {
         attrs["class"] += "is-light ";
     }
 
-    if (true) {
-        // or this: attrs["class"] += " is-outlined"
-        // TODO: is yellow for warning ok? kinda unreadable on white, esp w/ outlined
-    }
     if (votes.length > 0) {
         attrs["class"] += color;
         attrs["data-tooltip"] = votes.join(", ");
@@ -642,8 +528,6 @@ function draw_component(component) {
 function actions_column() {
     return lookup_versioned("components", []).map(lookup_versioned).map(draw_component);
     /*
-    return [
-        reaction_voter(state.actions[0]),
         // TODO: box of buttons (collapsable?):
         //      - volunteer to die modal
         //      - apprentice selection
@@ -664,7 +548,6 @@ function actions_column() {
         //      - inquisitor
         //      - judge (modal only)
         //      - priest
-    ];
     */
 }
 
