@@ -12,7 +12,7 @@ public class ReactionVoter implements UiComponent {
     private final String title;
     private final List<String> choices;
     private final int maxSelected;
-    private final String note;
+    private final String note; // TODO: different notes for readers vs writers?
     private final List<Player> participants;
     private final List<Player> writers;
     private final boolean showReactions;

@@ -26,6 +26,16 @@ public class Lobby {
             new ArrayList<>(),
             true);
 
+    private Buttons demoButtons = new Buttons(
+            this,
+            List.of("Start Game"),
+            List.of(
+                    x -> usernameLookup.values().forEach(
+                            p -> p.sendPublicMessage("Game start pressed", List.of("start"))
+                    )),
+            List.of()
+    );
+
     public Lobby(String name) {
         this.name = name;
     }
@@ -49,6 +59,7 @@ public class Lobby {
             if (usernameLookup.size() == 1) {
                 player.setAdmin(true);
                 demoVoter.addWriter(player);
+                demoButtons.addParticipant(player);
             }
             player.send("logged_in", new LoggedInMessage(this.name, username, password));
             // TODO: send the player a message with user/lobby/password?
