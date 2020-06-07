@@ -3,6 +3,9 @@ package org.kevinstock.witchhunt;
 import java.util.*;
 import java.util.stream.Collectors;
 
+// TODO: add a minimum number of selections, and initial selections parameter,
+// if only mimimum are selected, clicking again does not unselect.
+// useful for advancedRules and handicap in configure game
 public class ReactionVoter implements UiComponent {
     private static final int DISTINCT_REACTIONS = 4;
     private static final int ALLOWED_REACTIONS = 1;
@@ -28,7 +31,7 @@ public class ReactionVoter implements UiComponent {
         this(lobby, title, note, choices, maxSelected, participants, null, true);
     }
 
-    // All players alter the same selection (unless writers is empty)
+    // All players alter the same selection (unless writers is null)
     public ReactionVoter(Lobby lobby, String title, String note, List<String> choices, int maxSelected, List<Player> participants, List<Player> writers, boolean showReactions) {
         this.lobby = lobby;
         this.title = title;

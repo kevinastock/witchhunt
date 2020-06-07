@@ -67,8 +67,8 @@ public class Player {
     // TODO: add helpers for other visibilities? role, witches, angel, demon,
 
     private void sendMessageHelper(String message, String visibility, List<String> tags) {
-        String dayPhase = ""; // FIXME get from lobby
-        int day = 0; // FIXME get from lobby
+        String dayPhase = lobby.getPhaseIcon();
+        int day = lobby.getDay();
         tags.add(dayPhase);
         tags.add(String.format("day %d", day));
         LogMessage msg = new LogMessage(logIds++, message, visibility, dayPhase, day, tags);

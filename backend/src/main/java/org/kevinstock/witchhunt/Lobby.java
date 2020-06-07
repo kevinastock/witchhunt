@@ -14,27 +14,10 @@ public class Lobby {
     private final Map<String, Player> usernameLookup = new HashMap<>();
     private final Map<String, Consumer<Boolean>> actions = new HashMap<>();
 
+    private int day = 0;
+    private String phaseIcon = "config";
+    private ConfigureGame configuration = new ConfigureGame(this);
     private boolean acceptingNewPlayers = true; // TODO: volatile? nah, just make methods called by server sync
-
-    private ReactionVoter demoVoter = new ReactionVoter(
-            this,
-            "Demo Voter",
-            "Select as many as you want!",
-            List.of("Isabelle", "Sibylla", "Vesper", "Serafina", "Morgan", "Artemisia"),
-            1000,
-            new ArrayList<>(),
-            new ArrayList<>(),
-            true);
-
-    private Buttons demoButtons = new Buttons(
-            this,
-            List.of("Start Game"),
-            List.of(
-                    x -> usernameLookup.values().forEach(
-                            p -> p.sendPublicMessage("Game start pressed", List.of("start"))
-                    )),
-            List.of()
-    );
 
     public Lobby(String name) {
         this.name = name;
@@ -55,11 +38,10 @@ public class Lobby {
         } else {
             Player player = new Player(client, this, username, password);
             usernameLookup.put(username, player);
-            demoVoter.addParticipant(player);
+            configuration.addParticipant(player);
             if (usernameLookup.size() == 1) {
                 player.setAdmin(true);
-                demoVoter.addWriter(player);
-                demoButtons.addParticipant(player);
+                configuration.addWriter(player);
             }
             player.send("logged_in", new LoggedInMessage(this.name, username, password));
             // TODO: send the player a message with user/lobby/password?
@@ -77,6 +59,42 @@ public class Lobby {
         } else {
             callback.accept(value);
         }
+    }
+
+    public void setPhaseIcon(String icon) {
+        phaseIcon = icon;
+    }
+
+    public String getPhaseIcon() {
+        return phaseIcon;
+    }
+
+    public void setDay(int day) {
+        this.day = day;
+    }
+
+    public int getDay() {
+        return day;
+    }
+
+    public void rejectNewPlayers() {
+        acceptingNewPlayers = false;
+    }
+
+    public void resetLobby() {
+        actions.clear();
+        day = 0;
+        phaseIcon = "config";
+        acceptingNewPlayers = true;
+
+        configuration = new ConfigureGame(this);
+
+        usernameLookup.values().forEach(player -> {
+            configuration.addParticipant(player);
+            if (player.isAdmin()) {
+                configuration.addWriter(player);
+            }
+        });
     }
 
     public String createAction(Consumer<Boolean> callback) {

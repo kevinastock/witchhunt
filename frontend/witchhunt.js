@@ -592,9 +592,10 @@ function header() {
 
             m(".navbar-menu#navMenu", [
                 m(".navbar-end", [
-                    m("a.navbar-item", "Admin"), // TODO
+                    m("a.navbar-item", "Admin"), // TODO kick players, pause, advance phase
+                    m("a.navbar-item", "Lobby"), // TODO show current players in lobby and actually connected
                     m("a.navbar-item", "Rules"), // TODO
-                    m("a.navbar-item", "Settings"), // TODO
+                    m("a.navbar-item", "Settings"), // TODO options to change display, disconnect from lobby if connected
                 ]),
             ]),
         ]),

@@ -14,6 +14,10 @@ public class Buttons implements UiComponent {
 
     private long seqId = 0;
 
+    public Buttons(Lobby lobby, List<String> messages, List<Consumer<Boolean>> callbacks) {
+        this(lobby, messages, callbacks, List.of());
+    }
+
     public Buttons(Lobby lobby, List<String> messages, List<Consumer<Boolean>> callbacks, List<Player> participants) {
         this.messages = messages;
         this.participants = new ArrayList<>();
