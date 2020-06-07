@@ -509,7 +509,7 @@ function reaction_voter_row(voter, row, index) {
         // This could show how people have actually voted, but that's kinda bullshit, because people can switch at the last moment
         // and for witch voting, they all share the vote they're casting
         // FIXME: use icon from voter
-        m("td", m("span.icon", selected ? m("i.fas.fa-skull") : m("i.invisible.fas.fa-times-circle"))), // the invisible icon is because otherwise this gets all out of whack. https://github.com/jgthms/bulma/issues/2976 Even my suggested &nbsp; fix doesn't actually work - it's off by 1/2 a pixel.
+        m("td", m("span.icon", selected ? m(`i.fas.fa-${voter.icon}`) : m("i.invisible.fas.fa-times-circle"))), // the invisible icon is because otherwise this gets all out of whack. https://github.com/jgthms/bulma/issues/2976 Even my suggested &nbsp; fix doesn't actually work - it's off by 1/2 a pixel.
         m("td", row.choice), // TODO: strong if selected?
         ...reactions,
     ]);

@@ -7,6 +7,25 @@ import java.util.stream.Collectors;
 // if only mimimum are selected, clicking again does not unselect.
 // useful for advancedRules and handicap in configure game
 public class ReactionVoter implements UiComponent {
+    public enum Icon {
+        SKULL("skull"),
+        SHUFFLE("random"),
+        CHECK("check"),
+        BOMB("bomb"),
+        BAN("ban"),
+        TARGET("crosshairs"),
+        DICE("dice"),
+        LIFE("heart"),
+        JUDGE("gavel"),
+        ;
+
+        private String icon;
+
+        Icon(String icon) {
+            this.icon = icon;
+        }
+    }
+
     private static final int DISTINCT_REACTIONS = 4;
     private static final int ALLOWED_REACTIONS = 1;
 
@@ -19,6 +38,7 @@ public class ReactionVoter implements UiComponent {
     private final List<Player> participants;
     private final List<Player> writers;
     private final boolean showReactions;
+    private final String icon;
 
     private final List<Map<Player, Selector>> reactions = new ArrayList<>();
     private final Selector sharedSelector;
@@ -27,15 +47,16 @@ public class ReactionVoter implements UiComponent {
     private long seqId = 0;
 
     // Each player votes independently
-    public ReactionVoter(Lobby lobby, String title, String note, List<String> choices, int maxSelected, List<Player> participants) {
-        this(lobby, title, note, choices, maxSelected, participants, null, true);
+    public ReactionVoter(Lobby lobby, String title, String note, Icon icon, List<String> choices, int maxSelected, List<Player> participants) {
+        this(lobby, title, note, icon, choices, maxSelected, participants, null, true);
     }
 
     // All players alter the same selection (unless writers is null)
-    public ReactionVoter(Lobby lobby, String title, String note, List<String> choices, int maxSelected, List<Player> participants, List<Player> writers, boolean showReactions) {
+    public ReactionVoter(Lobby lobby, String title, String note, Icon icon, List<String> choices, int maxSelected, List<Player> participants, List<Player> writers, boolean showReactions) {
         this.lobby = lobby;
         this.title = title;
         this.note = note;
+        this.icon = icon.icon;
         this.choices = choices;
         this.maxSelected = maxSelected;
         this.participants = new ArrayList<>(); // Will be populated by addPlayer
@@ -135,7 +156,7 @@ public class ReactionVoter implements UiComponent {
             type = "REACTION_VOTER";
             title = voter.title;
             note = voter.note;
-            icon = "skull"; // TODO: make this a parameter of ReactionVoter
+            icon = voter.icon;
             if (voter.sharedSelector == null) {
                 selector = voter.votes.get(player).getKey();
             } else {
