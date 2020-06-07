@@ -53,5 +53,3 @@ consider being a monster and making it so the back button doesn't really work to
 currently using the "all" webfont packs. Use something from here to just get
 the icons I want, serving multi MB fonts is dumb:
 https://github.com/FortAwesome/Font-Awesome/wiki/Customize-Font-Awesome
-
-Make footer a "sticky footer" - always at least at bottom of page.

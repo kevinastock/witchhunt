@@ -715,8 +715,10 @@ function login_body() {
 var Game = {
     view: function() {
         return [
-            header(),
-            state.logged_in() ? game_body() : login_body(),
+            m("div.non-footer", [
+                header(),
+                state.logged_in() ? game_body() : login_body(),
+            ]),
             footer(),
         ];
     }
