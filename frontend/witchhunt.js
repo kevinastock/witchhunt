@@ -84,8 +84,9 @@ add_state_field("login_messages", {
 add_state_field("logs", [], update_append);
 
 add_state_field("versioned_data", new Map(), update_versioned);
-// FIXME: document the special things that are versioned_data
-// FIXME: we need some way to nuke this map at the end of a game - or at least on logout
+// Special keys in versioned_data: i.e., not uuids:
+//  * "components" - a list of other keys in versioned_data to show the user
+// TODO: we need some way to nuke this map at the end of a game - or at least on logout
 
 // FIXME delete this shit.
 let stupid_test_data = [];
@@ -148,8 +149,8 @@ function lookup_versioned(key, missing = null) {
     let in_state = state.versioned_data().has(key);
     let in_local = local_state.versioned_data.has(key);
     if (!in_state && !in_local) {
-        // FIXME: what's the right thing to do here? Presumably we may lookup components before the server sends us any
-        // It kinda sucks to pass in missing, but it's not clear what type to expect.
+        // We may lookup components before the server sends us any.  It kinda
+        // sucks to pass in missing, but it's not clear what type to expect.
         return missing;
     } else if (in_state && !in_local) {
         return state.versioned_data().get(key).data;
@@ -259,7 +260,8 @@ ws.onmessage = function(e) {
 
 ws.onclose = function(e) {
     // This is also closed if the connection can't be established, so that's good
-    // FIXME: notify the user that they're disconnected
+    // TODO: better notify the user that they're disconnected
+    // put up a modal?
     console.log(e.reason);
     setTimeout(function() {
         // Delay changing the header so refreshing the page doesn't flash the header color
@@ -268,7 +270,6 @@ ws.onclose = function(e) {
     }, 100);
 };
 
-// FIXME: this is dumb, don't send seq_id at the top level
 function send(action, data) {
     ws.send(JSON.stringify({
         action: action,
@@ -276,9 +277,7 @@ function send(action, data) {
     }));
 }
 
-// FIXME: do some heartbeating like https://github.com/websockets/ws#how-to-detect-and-close-broken-connections
-// change navbar to is-danger if heartbeat expires
-// if connection closes, put up a modal?
+// TODO: do some heartbeating like https://github.com/websockets/ws#how-to-detect-and-close-broken-connections ?
 
 function makeid(length) {
     var result = '';
@@ -314,11 +313,11 @@ function view_log_msg(l) {
             visibility_icon = m("i.fas.fa-user-secret");
             break;
         case "angel": // FIXME: angle and demon could be merged as "death"
-            // FIXME
+            // TODO
             visibility_icon = null;
             break;
         case "demon":
-            // FIXME
+            // TODO
             visibility_icon = null;
             break;
         default:
@@ -589,7 +588,6 @@ function header() {
                 m(".navbar-item", m("h1.is-size-3.has-text-weight-bold", "WH")),
                 m(".navbar-item", m("span", "30 seconds")),
                 m("a.navbar-burger.burger[role=button][data-target=navMenu]", [
-                    // FIXME: the burger is busted?
                     m("span"),
                     m("span"),
                     m("span"),
