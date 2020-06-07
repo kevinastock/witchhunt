@@ -139,6 +139,8 @@ var local_state = {
     selector_seq_id: 1,
 
     versioned_data: new Map(),
+
+    header_class: "is-primary",
 };
 
 function lookup_versioned(key, missing = null) {
@@ -259,7 +261,11 @@ ws.onclose = function(e) {
     // This is also closed if the connection can't be established, so that's good
     // FIXME: notify the user that they're disconnected
     console.log(e.reason);
-    m.redraw();
+    setTimeout(function() {
+        // Delay changing the header so refreshing the page doesn't flash the header color
+        local_state.header_class = "is-danger";
+        m.redraw();
+    }, 100);
 };
 
 // FIXME: this is dumb, don't send seq_id at the top level
@@ -572,7 +578,7 @@ function actions_column() {
 }
 
 function header() {
-    return m("nav.navbar.is-primary.is-fixed-top[role=navigation]", [
+    return m("nav.navbar.is-fixed-top[role=navigation]", {class: local_state.header_class}, [
         // TODO: add some notifications here
         // TODO: phase and time remaining, live updates (maybe only every 5/10 seconds)
         // TODO: what settings? how to set?
