@@ -1,16 +1,7 @@
 Priority things to do:
 
-    * Ok, so some of this is starting to feel like a mess on the server.
-        * Instead of accumulating messages from allover, let's have the lobby maintain copies of versioned data and logs.
-        * Lobby needs to be wired everywhere, but that was the case before.
-        * There are functions to update logs and versioned data (login probably gets to stay special), but the don't actually change the data
-        * instead they stage new versions of the data, when control gets back to a top level function in lobby, it knows what's changed
-            * the top level function prepares all the messages which app will distribute, and it applies the changes to the actual data model
-        * What's that data model look like? Should look _a lot_ like the client data models for sanity. Can use a lot more namedtuples I don't lose my mind.
-    * create the reaction voter on the server
-    * have configuration send a reaction voter for role selection
-    * front end handling of reaction voter
-
+    * modals. client generated (rules) and server generated (error messages, start game w/ too few players)
+    * player logout mechanism - button in settings once in lobby, also admin kick button
 
 * maybe add a header and collapse button at the top of each section? Then user can hide panes they don't want, which makes mobile nicer
     * probably need an icon to notify that something has changed.
@@ -25,7 +16,6 @@ Priority things to do:
 and extras:
     * mod modal: bunch of buttons for actions a mod can do - toggle pause, mod kills, others?
     * rule book: modal w/ search? also each character card
-    * switch to nav bar instead of hero
 
 * Tables on mobile gets kinda fucked. How do we make this scale down?
     * maybe make each row a level? it is properly reactive. left can have icon and name grouped together, right can have buttons grouped together, will show as two rows on mobile.
@@ -50,9 +40,6 @@ Probably need to limit user names - long words cause table cells to keep growing
 
 pause button for everyone - should require some threshold of players to activate (or admin), requires unianimous vote to resume (admin has extra button to force resume)
 
-zero lag on buttons would be nice - maintain separate local state, only remove it when we get an ack from the server that it has seen the change we put in.
-View specific things can combine multiple streams, notably, buttons that rely on local state until they know the server has seen their message.
-
 dark mode: https://github.com/jgthms/bulma/issues/2342
 
 a minigame should be present at least during eyes closed phases which encourages players to click:
@@ -66,15 +53,5 @@ consider being a monster and making it so the back button doesn't really work to
 currently using the "all" webfont packs. Use something from here to just get
 the icons I want, serving multi MB fonts is dumb:
 https://github.com/FortAwesome/Font-Awesome/wiki/Customize-Font-Awesome
-
-How can we handle partial updates to nested data? maybe use https://www.npmjs.com/package/jsonpath ? that's a bit heavy weight for what I need
-maybe all object updates should be deep merges like https://github.com/TehShrike/deepmerge ?
-it'd be nice if such a solution were deeply integrated with streams so that there's, e.g., a stream for reactions to a given player, and a stream for the local decision, which can be combined for the view
-    - Using the buttons & components setup, we can have the component (a nested structure) defined once when it's created, mutable parts of it are all stored in a flat set of items that are each versioned and referenced by the component
-
-Once we're past login, I think everything is `n Choose r` or one click action.
-If everything can be structured this way, the client could pretty easily
-simulate the server and keep lag from being visible.
-
 
 Make footer a "sticky footer" - always at least at bottom of page.
