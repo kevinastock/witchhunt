@@ -447,7 +447,9 @@ function reaction_voter_header(voter) {
 }
 
 function reaction_voter_footer(voter) {
-    return m("th", {"colspan": voter.show_reactions ? 6 : 2}, m("span.has-text-info.has-text-weight-normal", voter.note));
+    return m("th", {
+        "colspan": voter.show_reactions ? 6 : 2
+    }, m("span.has-text-info.has-text-weight-normal", voter.note));
 }
 
 function reaction(row, reaction_index, color) {
@@ -516,10 +518,28 @@ function draw_reaction_voter(voter) {
     );
 }
 
+function draw_button(button) {
+    return m("button.button.is-primary.is-fullwidth", {
+        onclick: function() {
+            send("set", {
+                client_seq_id: local_state.selector_seq_id++,
+                key: button.action,
+                value: true,
+            });
+        }
+    }, button.message);
+}
+
+function draw_buttons(buttons) {
+    return buttons.buttons.map(draw_button);
+}
+
 function draw_component(component) {
     switch (component.type) {
         case "REACTION_VOTER":
             return draw_reaction_voter(component);
+        case "BUTTONS":
+            return draw_buttons(component);
         default:
             return m(".notification.is-danger", "Unknown component type " + component.type);
     }

@@ -24,6 +24,8 @@ public class Buttons implements UiComponent {
 
     public void addParticipant(Player player) {
         participants.add(player);
+        forceSend(player);
+        player.addComponent(this);
     }
 
     @Override
