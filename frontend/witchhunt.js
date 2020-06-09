@@ -142,6 +142,8 @@ var local_state = {
     versioned_data: new Map(),
 
     header_class: "is-primary",
+
+    modal: no_modal,
 };
 
 function lookup_versioned(key, missing = null) {
@@ -576,7 +578,61 @@ function actions_column() {
     */
 }
 
+function no_modal() {
+    return undefined;
+}
+
+function close_modal() {
+    local_state.modal = no_modal;
+}
+
+
+function modal_helper(title, body) {
+    return m(".modal.is-active", [
+        m(".modal-background", {onclick: close_modal}),
+        m(".modal-card", [
+            m("header.modal-card-head", [
+                m("p.modal-card-title", title),
+                m("button.delete", {onclick: close_modal}),
+            ]),
+            m("section.modal-card-body", body),
+            m("footer.modal-card-foot"),
+        ]),
+    ]);
+}
+
+function rules_modal() {
+    // TODO: dump the rule book here
+    return modal_helper("Rules", m("span", "Hello world"));
+}
+
+function lobby_modal() {
+    // TODO: this should show who's in the lobby, if they're connected, and if they've been killed
+    // TODO: leave lobby button
+    return modal_helper("Lobby", m("span", "Hello world"));
+}
+
+function settings_modal() {
+    // TODO: allow setting number of log records to show
+    // TODO: dark mode!
+    return modal_helper("Settings", m("span", "Hello world"));
+}
+
+function admin_modal() {
+    // TODO: just a list of admin buttons
+    //  * pause
+    //  * advance phase
+    //  * kick player
+    return modal_helper("Admin", m("span", "Hello world"));
+}
+
 function header() {
+    let navlinks = [
+        m("a.navbar-item", {onclick: function() {local_state.modal = admin_modal;}}, "Admin"), // TODO: only show if admin
+        m("a.navbar-item", {onclick: function() {local_state.modal = lobby_modal;}}, "Lobby"), // TODO: only show if connected to a lobby
+        m("a.navbar-item", {onclick: function() {local_state.modal = rules_modal;}}, "Rules"),
+        m("a.navbar-item", {onclick: function() {local_state.modal = settings_modal;}}, "Settings"),
+    ];
     return m("nav.navbar.is-fixed-top[role=navigation]", {class: local_state.header_class}, [
         // TODO: add some notifications here
         // TODO: phase and time remaining, live updates (maybe only every 5/10 seconds)
@@ -594,14 +650,7 @@ function header() {
                 ]),
             ]),
 
-            m(".navbar-menu#navMenu", [
-                m(".navbar-end", [
-                    m("a.navbar-item", "Admin"), // TODO kick players, pause, advance phase
-                    m("a.navbar-item", "Lobby"), // TODO show current players in lobby and actually connected
-                    m("a.navbar-item", "Rules"), // TODO
-                    m("a.navbar-item", "Settings"), // TODO options to change display, disconnect from lobby if connected
-                ]),
-            ]),
+            m(".navbar-menu#navMenu", m(".navbar-end", navlinks)),
         ]),
     ]);
 }
@@ -720,6 +769,7 @@ var Game = {
                 state.logged_in() ? game_body() : login_body(),
             ]),
             footer(),
+            local_state.modal(),
         ];
     }
 };
