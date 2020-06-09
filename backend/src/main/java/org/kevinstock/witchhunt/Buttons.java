@@ -10,9 +10,6 @@ public class Buttons implements UiComponent {
     private final String key = UUID.randomUUID().toString();
     private final List<String> messages;
     private final List<String> actions;
-    private final List<Player> participants;
-
-    private long seqId = 0;
 
     public Buttons(Lobby lobby, List<String> messages, List<Consumer<Boolean>> callbacks) {
         this(lobby, messages, callbacks, List.of());
@@ -20,14 +17,12 @@ public class Buttons implements UiComponent {
 
     public Buttons(Lobby lobby, List<String> messages, List<Consumer<Boolean>> callbacks, List<Player> participants) {
         this.messages = messages;
-        this.participants = new ArrayList<>();
         this.actions = callbacks.stream().map(lobby::createAction).collect(Collectors.toList());
 
         participants.forEach(this::addParticipant);
     }
 
     public void addParticipant(Player player) {
-        participants.add(player);
         forceSend(player);
         player.addComponent(this);
     }
@@ -39,12 +34,7 @@ public class Buttons implements UiComponent {
 
     @Override
     public void forceSend(Player player) {
-        seqId++;
-        participants.forEach(this::notifyPlayer);
-    }
-
-    public void notifyPlayer(Player player) {
-        player.sendVersionedData(key, seqId, new ButtonsMessage(this));
+        player.sendVersionedData(key, 0, new ButtonsMessage(this));
     }
 
     private static class ButtonsMessage {
@@ -60,12 +50,12 @@ public class Buttons implements UiComponent {
         }
     }
 
-    private static class ButtonMessage {
+    public static class ButtonMessage {
         private final String message;
         private final String action;
         // TODO: colors?
 
-        private ButtonMessage(String message, String action) {
+        public ButtonMessage(String message, String action) {
             this.message = message;
             this.action = action;
         }

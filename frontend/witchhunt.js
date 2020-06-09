@@ -80,6 +80,7 @@ add_state_field("login_messages", {
     password: "",
 }, update_clobber);
 
+add_state_field("admin_buttons", [], update_clobber);
 
 add_state_field("logs", [], update_append);
 
@@ -512,7 +513,9 @@ function reaction_voter_row(voter, row, index) {
         // and for witch voting, they all share the vote they're casting
         // FIXME: use icon from voter
         m("td", m("span.icon", selected ? m(`i.fas.fa-${voter.icon}`) : m("i.invisible.fas.fa-times-circle"))), // the invisible icon is because otherwise this gets all out of whack. https://github.com/jgthms/bulma/issues/2976 Even my suggested &nbsp; fix doesn't actually work - it's off by 1/2 a pixel.
-        m("td", {class: selected ? "has-text-weight-bold" : "" }, row.choice),
+        m("td", {
+            class: selected ? "has-text-weight-bold" : ""
+        }, row.choice),
         ...reactions,
     ]);
 }
@@ -538,7 +541,7 @@ function draw_button(button) {
 }
 
 function draw_buttons(buttons) {
-    return buttons.buttons.map(draw_button);
+    return m(".buttons", buttons.map(draw_button));
 }
 
 function draw_component(component) {
@@ -546,7 +549,7 @@ function draw_component(component) {
         case "REACTION_VOTER":
             return draw_reaction_voter(component);
         case "BUTTONS":
-            return draw_buttons(component);
+            return draw_buttons(component.buttons);
         default:
             return m(".notification.is-danger", "Unknown component type " + component.type);
     }
@@ -589,11 +592,15 @@ function close_modal() {
 
 function modal_helper(title, body) {
     return m(".modal.is-active", [
-        m(".modal-background", {onclick: close_modal}),
+        m(".modal-background", {
+            onclick: close_modal
+        }),
         m(".modal-card", [
             m("header.modal-card-head", [
                 m("p.modal-card-title", title),
-                m("button.delete", {onclick: close_modal}),
+                m("button.delete", {
+                    onclick: close_modal
+                }),
             ]),
             m("section.modal-card-body", body),
             m("footer.modal-card-foot"),
@@ -623,17 +630,39 @@ function admin_modal() {
     //  * pause
     //  * advance phase
     //  * kick player
-    return modal_helper("Admin", m("span", "Hello world"));
+    return modal_helper("Admin", draw_buttons(state.admin_buttons()));
 }
 
 function header() {
-    let navlinks = [
-        m("a.navbar-item", {onclick: function() {local_state.modal = admin_modal;}}, "Admin"), // TODO: only show if admin
-        m("a.navbar-item", {onclick: function() {local_state.modal = lobby_modal;}}, "Lobby"), // TODO: only show if connected to a lobby
-        m("a.navbar-item", {onclick: function() {local_state.modal = rules_modal;}}, "Rules"),
-        m("a.navbar-item", {onclick: function() {local_state.modal = settings_modal;}}, "Settings"),
-    ];
-    return m("nav.navbar.is-fixed-top[role=navigation]", {class: local_state.header_class}, [
+    let navlinks = [];
+    if (state.admin_buttons().length > 0) {
+        navlinks.push(m("a.navbar-item", {
+            onclick: function() {
+                local_state.modal = admin_modal;
+            }
+        }, "Admin"));
+    }
+    if (state.logged_in()) {
+        navlinks.push(m("a.navbar-item", {
+            onclick: function() {
+                local_state.modal = lobby_modal;
+            }
+        }, "Lobby"));
+    }
+    navlinks.push(m("a.navbar-item", {
+        onclick: function() {
+            local_state.modal = rules_modal;
+        }
+    }, "Rules"));
+    navlinks.push(m("a.navbar-item", {
+        onclick: function() {
+            local_state.modal = settings_modal;
+        }
+    }, "Settings"));
+
+    return m("nav.navbar.is-fixed-top[role=navigation]", {
+        class: local_state.header_class
+    }, [
         // TODO: add some notifications here
         // TODO: phase and time remaining, live updates (maybe only every 5/10 seconds)
         // TODO: what settings? how to set?

@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 public class Player {
     private final List<LogMessage> logs = new ArrayList<>();
+    private static final String ADMIN_BUTTONS = "admin_buttons";
 
     private final String username;
     private final String password;
@@ -46,6 +47,8 @@ public class Player {
         components.forEach(c -> c.forceSend(this));
         sendComponents();
         latestClientSeqId = 0; // TODO: or send client current value? needed if there's a list of clients.
+
+        sendAdminButtons();
     }
 
     public Lobby getLobby() {
@@ -90,6 +93,14 @@ public class Player {
 
     public void setAdmin(boolean admin) {
         isAdmin = admin;
+    }
+
+    public void sendAdminButtons() {
+        if (!isAdmin) {
+            return;
+        }
+
+        send(ADMIN_BUTTONS, lobby.getAdminButtons());
     }
 
     public void addComponent(UiComponent component) {

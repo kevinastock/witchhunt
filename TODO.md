@@ -1,6 +1,7 @@
 Priority things to do:
 
     * modals. client generated (rules) and server generated (error messages, start game w/ too few players)
+        * fuck it, no server generated modals for now. we can use the log for that.
     * player logout mechanism - button in settings once in lobby, also admin kick button
 
 * maybe add a header and collapse button at the top of each section? Then user can hide panes they don't want, which makes mobile nicer
@@ -53,3 +54,5 @@ consider being a monster and making it so the back button doesn't really work to
 currently using the "all" webfont packs. Use something from here to just get
 the icons I want, serving multi MB fonts is dumb:
 https://github.com/FortAwesome/Font-Awesome/wiki/Customize-Font-Awesome
+
+Automatically retry reconnect if websocket closes?

@@ -12,6 +12,7 @@ public class Lobby {
 
     private final String name;
     private final Map<String, Player> usernameLookup = new HashMap<>();
+    private final Map<String, String> kickPlayer = new HashMap<>();
     private final Map<String, Consumer<Boolean>> actions = new HashMap<>();
 
     private int day = 0;
@@ -39,14 +40,15 @@ public class Lobby {
             Player player = new Player(client, this, username, password);
             usernameLookup.put(username, player);
             configuration.addParticipant(player);
+            kickPlayer.put(username, createAction(ignored -> removePlayer(player)));
             if (usernameLookup.size() == 1) {
                 player.setAdmin(true);
                 configuration.addWriter(player);
             }
             player.send("logged_in", new LoggedInMessage(this.name, username, password));
+            updateAdminButtons();
             // TODO: send the player a message with user/lobby/password?
             // TODO: message everyone this player has joined the lobby.
-            // TODO: update the admin options
         }
     }
 
@@ -79,6 +81,27 @@ public class Lobby {
 
     public void rejectNewPlayers() {
         acceptingNewPlayers = false;
+    }
+
+    public List<Buttons.ButtonMessage> getAdminButtons() {
+        List<Buttons.ButtonMessage> buttons = new ArrayList<>();
+
+        // TODO: add pause and advance phase buttons as needed
+
+        kickPlayer.forEach((name, button) -> {
+            buttons.add(new Buttons.ButtonMessage(name, button));
+        });
+
+        return buttons;
+    }
+
+    private void updateAdminButtons() {
+        usernameLookup.values().forEach(Player::sendAdminButtons);
+    }
+
+    public void removePlayer(Player player) {
+        // TODO
+        updateAdminButtons();
     }
 
     public void resetLobby() {
