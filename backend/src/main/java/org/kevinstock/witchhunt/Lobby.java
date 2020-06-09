@@ -89,7 +89,7 @@ public class Lobby {
         // TODO: add pause and advance phase buttons as needed
 
         kickPlayer.forEach((name, button) -> {
-            buttons.add(new Buttons.ButtonMessage(name, button));
+            buttons.add(new Buttons.ButtonMessage("Kick " + name, button));
         });
 
         return buttons;
