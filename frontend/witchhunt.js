@@ -591,6 +591,7 @@ function close_modal() {
 
 
 function modal_helper(title, body) {
+    // TODO: might need is-clipped somewhere if modals get long
     return m(".modal.is-active", [
         m(".modal-background", {
             onclick: close_modal

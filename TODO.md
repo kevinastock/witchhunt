@@ -2,6 +2,8 @@ Priority things to do:
 
     * modals. client generated (rules) and server generated (error messages, start game w/ too few players)
         * fuck it, no server generated modals for now. we can use the log for that.
+    * settings modal: allow setting log length
+    * lobby modal: list of all players + connected and alive status
     * player logout mechanism - button in settings once in lobby, also admin kick button
 
 * maybe add a header and collapse button at the top of each section? Then user can hide panes they don't want, which makes mobile nicer
