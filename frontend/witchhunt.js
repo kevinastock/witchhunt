@@ -610,7 +610,7 @@ function modal_helper(title, body) {
 
 function rules_modal() {
     // TODO: dump the rule book here
-    return modal_helper("Rules", m("span", "Hello world"));
+    return modal_helper("Rules", m("a", {href: "http://chocolatepi.net/files/witchhunt_rulebook_web.pdf"}, "Official rule book"));
 }
 
 function lobby_modal() {
