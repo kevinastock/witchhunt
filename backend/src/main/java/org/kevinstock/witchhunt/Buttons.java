@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class Buttons implements UiComponent {
-    private final String key = UUID.randomUUID().toString();
+    private final String key;
     private final List<String> messages;
     private final List<String> actions;
 
@@ -16,6 +16,11 @@ public class Buttons implements UiComponent {
     }
 
     public Buttons(Lobby lobby, List<String> messages, List<Consumer<Boolean>> callbacks, List<Player> participants) {
+        this(lobby, UUID.randomUUID().toString(), messages, callbacks, participants);
+    }
+
+    public Buttons(Lobby lobby, String key, List<String> messages, List<Consumer<Boolean>> callbacks, List<Player> participants) {
+        this.key = key;
         this.messages = messages;
         this.actions = callbacks.stream().map(lobby::createAction).collect(Collectors.toList());
 

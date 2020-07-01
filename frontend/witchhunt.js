@@ -87,6 +87,7 @@ add_state_field("logs", [], update_append);
 add_state_field("versioned_data", new Map(), update_versioned);
 // Special keys in versioned_data: i.e., not uuids:
 //  * "components" - a list of other keys in versioned_data to show the user
+//  * "leave_lobby" - a list of buttons (really just one) for the user to leave the lobby
 // TODO: we need some way to nuke this map at the end of a game - or at least on logout
 
 add_state_field("player_status", [], update_clobber);
@@ -616,7 +617,7 @@ function lobby_modal() {
             m("tfoot", m("tr", m("th[colspan=3]"))),
             m("tbody", state.player_status().map(player_status_row))
         ),
-        // TODO: leave lobby button
+        draw_buttons(lookup_versioned("leave_lobby", []).buttons),
     ]);
 }
 

@@ -9,9 +9,10 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class Lobby {
-    private static final String PLAYER_STATUS = "player_status";
-
     private static final Logger logger = LoggerFactory.getLogger(Lobby.class);
+
+    private static final String PLAYER_STATUS = "player_status";
+    private static final String LEAVE_LOBBY = "leave_lobby";
 
     private final String name;
     private final Map<String, Player> usernameLookup = new HashMap<>();
@@ -102,6 +103,13 @@ public class Lobby {
             usernameLookup.put(username, player);
             configuration.addParticipant(player);
             kickPlayer.put(player, createAction(ignored -> removePlayer(player)));
+            new Buttons(
+                    this,
+                    LEAVE_LOBBY,
+                    List.of("Leave lobby"),
+                    List.of(ignored -> removePlayer(player)),
+                    List.of(player)
+            );
             if (usernameLookup.size() == 1) {
                 player.setAdmin(true);
                 configuration.addWriter(player);
