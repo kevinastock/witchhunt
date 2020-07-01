@@ -40,7 +40,7 @@ public class Selector {
     }
 
     private void select(Boolean value, int choice) {
-        logger.info("Setting {} @ {} to {}: was {}", key, choice, value, selected);
+        logger.trace("Setting {} @ {} to {}: was {}", key, choice, value, selected);
         if (value && !selected.contains(choice)) {
             selected.add(choice);
             if (selected.size() > maxSelected) {
@@ -49,7 +49,7 @@ public class Selector {
         } else if (!value) {
             selected.remove(Integer.valueOf(choice));
         }
-        logger.info("Now it's {}", selected);
+        logger.trace("Now it's {}", selected);
 
         // Intentionally resend if selected is unchanged - we need to notify sending player that we saw their
         // client id. We could only send to the player that caused this action, but w/e.

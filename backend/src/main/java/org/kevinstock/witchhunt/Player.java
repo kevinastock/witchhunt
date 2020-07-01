@@ -28,6 +28,10 @@ public class Player {
         this.client.setPlayer(this);
     }
 
+    public void disconnect() {
+        this.client.close("Kicked from lobby");
+    }
+
     public String getUsername() {
         return username;
     }

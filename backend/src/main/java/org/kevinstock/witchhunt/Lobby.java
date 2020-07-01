@@ -145,6 +145,7 @@ public class Lobby {
 
         // TODO: add pause and advance phase buttons as needed
 
+        // TODO: switch to kill player buttons once in game
         kickPlayer.forEach((player, button) -> {
             buttons.add(new Buttons.ButtonMessage("Kick " + player.getUsername(), button));
         });
@@ -159,25 +160,26 @@ public class Lobby {
     public void removePlayer(Player player) {
         if (!mutablePlayerList) {
             return;
-        } else {
-            kickPlayer.remove(player);
-            configuration.removePlayer(player);
-
-            for (String username : usernameLookup.keySet()) {
-                if (usernameLookup.get(username).equals(player)) {
-                    usernameLookup.remove(username);
-                    break;
-                }
-            }
-
-            usernameLookup
-                    .values()
-                    .forEach(
-                            p ->
-                                    p.sendPublicMessage(
-                                            player.getUsername() + " has left the lobby.",
-                                            List.of("join", player.getUsername())));
         }
+
+        kickPlayer.remove(player);
+        configuration.removePlayer(player);
+
+        for (String username : usernameLookup.keySet()) {
+            if (usernameLookup.get(username).equals(player)) {
+                usernameLookup.remove(username);
+                break;
+            }
+        }
+
+        usernameLookup
+                .values()
+                .forEach(
+                        p ->
+                                p.sendPublicMessage(
+                                        player.getUsername() + " has left the lobby.",
+                                        List.of("join", player.getUsername())));
+        player.disconnect();
         updateAdminButtons();
     }
 
