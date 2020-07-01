@@ -111,7 +111,7 @@ public class Lobby {
                     List.of(player)
             );
             if (usernameLookup.size() == 1) {
-                player.setAdmin(true);
+                player.makeAdmin();
                 configuration.addWriter(player);
             }
             player.send("logged_in", new LoggedInMessage(this.name, username, password));
@@ -175,7 +175,7 @@ public class Lobby {
                 .values()
                 .stream()
                 .map(p ->
-                        new PlayerStatusMessage(p.getUsername(), p.isConnected(), p.isAlive()))
+                        new PlayerStatusMessage(p.getUsername(), p.isConnected(), p.isAlive(), p.isAdmin()))
                 .sorted(Comparator.comparing(PlayerStatusMessage::getUsername, String.CASE_INSENSITIVE_ORDER))
                 .collect(Collectors.toList());
         usernameLookup.values().forEach(p -> p.send(PLAYER_STATUS, status));
@@ -205,6 +205,12 @@ public class Lobby {
                                 p.sendPublicMessage(
                                         player.getUsername() + " has left the lobby.",
                                         List.of("join", player.getUsername())));
+
+        // Promote someone to admin if there isn't one
+        if (usernameLookup.values().stream().noneMatch(Player::isAdmin)) {
+            usernameLookup.values().stream().findFirst().ifPresent(Player::makeAdmin);
+        }
+
         player.disconnect();
         updateAdminButtons();
     }
@@ -273,11 +279,13 @@ public class Lobby {
         private final String username;
         private final boolean connected;
         private final boolean alive;
+        private final boolean admin;
 
-        private PlayerStatusMessage(String username, boolean connected, boolean alive) {
+        private PlayerStatusMessage(String username, boolean connected, boolean alive, boolean admin) {
             this.username = username;
             this.connected = connected;
             this.alive = alive;
+            this.admin = admin;
         }
 
         public String getUsername() {

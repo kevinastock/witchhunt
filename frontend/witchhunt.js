@@ -600,21 +600,23 @@ function player_status_row(player) {
     return m("tr", {
         key: player.username
     }, [
-        m("td", m("span.icon", player.connected ? m("i.fas.fa-check") : m("i.fas.fa-times"))),
-        m("td", m("span.icon", player.alive ? m("i.fas.fa-user") : m("i.fas.fa-skull"))),
+        m("td", m("span.icon", player.alive ? null : m("i.fas.fa-skull"))),
         m("td", m.trust(player.username)),
+        m("td", m("span.icon", player.admin ? m("i.fas.fa-crown") : null)),
+        m("td", m("span.icon", player.connected ? m("i.fas.fa-check") : m("i.fas.fa-times"))),
     ]);
 }
 
 function lobby_modal() {
     return modal_helper("Lobby " + state.logged_in().lobby, [
-        m("table.table",
+        m("table.table.log-table.is-fullwidth",
             m("thead", m("tr",
-                m("th", "Connected"),
-                m("th", "Alive"),
-                m("th", "Username")
+                m("th", ""),
+                m("th", "Username"),
+                m("th", "Admin"),
+                m("th", "Connected")
             )),
-            m("tfoot", m("tr", m("th[colspan=3]"))),
+            m("tfoot", m("tr", m("th[colspan=4]"))),
             m("tbody", state.player_status().map(player_status_row))
         ),
         draw_buttons(lookup_versioned("leave_lobby", []).buttons),

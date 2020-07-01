@@ -96,8 +96,8 @@ public class Player {
         return isAdmin;
     }
 
-    public void setAdmin(boolean admin) {
-        isAdmin = admin;
+    public void makeAdmin() {
+        isAdmin = true;
     }
 
     public void sendAdminButtons() {
