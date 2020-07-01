@@ -6,8 +6,11 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class Lobby {
+    private static final String PLAYER_STATUS = "player_status";
+
     private static final Logger logger = LoggerFactory.getLogger(Lobby.class);
 
     private final String name;
@@ -88,6 +91,7 @@ public class Lobby {
             if (existing.getPassword().equals(password)) {
                 existing.updateClient(client);
                 existing.send("logged_in", new LoggedInMessage(this.name, username, password));
+                updatePlayerStatus();
             } else {
                 LoginError.passwordError(client, "Username taken / incorrect password");
             }
@@ -106,6 +110,7 @@ public class Lobby {
             player.sendSecretMessage(String.format("Welcome to lobby %s. Your username is '%s' and your password is '%s'.", name, username, password), List.of("join", "username"));
             usernameLookup.values().forEach(p -> p.sendPublicMessage(username + " has joined the lobby.", List.of("join", username)));
             updateAdminButtons();
+            updatePlayerStatus();
         }
     }
 
@@ -155,6 +160,18 @@ public class Lobby {
 
     private void updateAdminButtons() {
         usernameLookup.values().forEach(Player::sendAdminButtons);
+    }
+
+    public void updatePlayerStatus() {
+        List<PlayerStatusMessage> status = usernameLookup
+                .values()
+                .stream()
+                .map(p ->
+                        new PlayerStatusMessage(p.getUsername(), p.isConnected(), p.isAlive()))
+                .collect(Collectors.toList());
+        usernameLookup.values().forEach(p -> p.send(PLAYER_STATUS, status));
+
+        // TODO: Make sure this is called when a player dies
     }
 
     public void removePlayer(Player player) {
@@ -240,6 +257,18 @@ public class Lobby {
                 client.send("login_messages", this);
             }
             return error;
+        }
+    }
+
+    private static class PlayerStatusMessage {
+        private final String username;
+        private final boolean connected;
+        private final boolean alive;
+
+        private PlayerStatusMessage(String username, boolean connected, boolean alive) {
+            this.username = username;
+            this.connected = connected;
+            this.alive = alive;
         }
     }
 }

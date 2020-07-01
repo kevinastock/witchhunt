@@ -1,5 +1,7 @@
 package org.kevinstock.witchhunt;
 
+import com.google.common.html.HtmlEscapers;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -72,6 +74,7 @@ public class Player {
     // TODO: add helpers for other visibilities? role, witches, angel, demon,
 
     private void sendMessageHelper(String message, String visibility, List<String> tags) {
+        message = HtmlEscapers.htmlEscaper().escape(message);
         String dayPhase = lobby.getPhaseIcon();
         int day = lobby.getDay();
         tags.add(dayPhase);
@@ -138,6 +141,15 @@ public class Player {
 
     public void send(String action, Object o) {
         client.send(action, o);
+    }
+
+    public boolean isConnected() {
+        return client.isConnected();
+    }
+
+    public boolean isAlive() {
+        // FIXME: use actual status from in game
+        return true;
     }
 
     private static class VersionedData {

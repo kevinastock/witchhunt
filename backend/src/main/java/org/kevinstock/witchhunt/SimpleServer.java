@@ -36,6 +36,7 @@ public class SimpleServer extends WebSocketServer {
     public void onClose(WebSocket conn, int code, String reason, boolean remote) {
         System.out.println("closed " + conn.getRemoteSocketAddress() + " with exit code " + code + " additional info: " + reason);
         ClientConnection client = connections.remove(conn.getRemoteSocketAddress());
+        client.notifyClosed();
         // TODO: we should notify something the client has disconnected so players can be informed a player is not online
     }
 

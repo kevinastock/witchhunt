@@ -48,4 +48,15 @@ public class ClientConnection {
     public void setPlayer(Player player) {
         this.player = player;
     }
+
+    public boolean isConnected() {
+        return conn.isOpen();
+    }
+
+    public void notifyClosed() {
+        Lobby lobby = getLobby();
+        if (lobby != null) {
+            lobby.updatePlayerStatus();
+        }
+    }
 }

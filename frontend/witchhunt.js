@@ -89,6 +89,8 @@ add_state_field("versioned_data", new Map(), update_versioned);
 //  * "components" - a list of other keys in versioned_data to show the user
 // TODO: we need some way to nuke this map at the end of a game - or at least on logout
 
+add_state_field("player_status", [], update_clobber);
+
 // Stuff that the server will never update
 var local_state = {
     // The local state of the form fields for logging in
@@ -398,7 +400,7 @@ function log_column() {
             // TODO: if there's text here, add an X on the right to clear it. I don't know how to make an icon in an input clickable.
         ]),
 
-        m("table.table.log-table.is-hoverable.is-fullwidth",
+        m("table.table.log-table.is-fullwidth",
             m("tbody", log_rows_page(local_state.log_search_result()))),
 
         paginator(local_state.log_search_result().length),
@@ -584,13 +586,35 @@ function modal_helper(title, body) {
 
 function rules_modal() {
     // TODO: dump the rule book here
-    return modal_helper("Rules", m("a", {href: "http://chocolatepi.net/files/witchhunt_rulebook_web.pdf"}, "Official rule book"));
+    return modal_helper("Rules", m("a", {
+        href: "http://chocolatepi.net/files/witchhunt_rulebook_web.pdf"
+    }, "Official rule book"));
+}
+
+
+function player_status_row(player) {
+    return m("tr", {
+        key: player.username
+    }, [
+        m("td", m("span.icon", player.connected ? m("i.fas.fa-check") : m("i.fas.fa-times"))),
+        m("td", m("span.icon", player.alive ? m("i.fas.fa-user") : m("i.fas.fa-skull"))),
+        m("td", m.trust(player.username)),
+    ]);
 }
 
 function lobby_modal() {
-    // TODO: this should show who's in the lobby, if they're connected, and if they've been killed
-    // TODO: leave lobby button
-    return modal_helper("Lobby", m("span", "Hello world"));
+    return modal_helper("Lobby " + state.logged_in().lobby, [
+        m("table.table",
+            m("thead", m("tr",
+                m("th", "Connected"),
+                m("th", "Alive"),
+                m("th", "Username")
+            )),
+            m("tfoot", m("tr", m("th[colspan=3]"))),
+            m("tbody", state.player_status().map(player_status_row))
+        ),
+        // TODO: leave lobby button
+    ]);
 }
 
 function settings_modal() {
@@ -617,11 +641,12 @@ function header() {
         }, "Admin"));
     }
     if (state.logged_in()) {
+        let disconnect = state.player_status().some(p => !p.connected);
         navlinks.push(m("a.navbar-item", {
             onclick: function() {
                 local_state.modal = lobby_modal;
             }
-        }, "Lobby"));
+        }, m("span", ["Lobby"].concat(disconnect ? [m.trust("&nbsp;"), m("span.icon", m("i.fas.fa-exclamation-triangle"))] : []))));
     }
     navlinks.push(m("a.navbar-item", {
         onclick: function() {
