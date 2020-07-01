@@ -101,6 +101,12 @@ public class ConfigureGame {
         startGame.addParticipant(player);
     }
 
+    public void removePlayer(Player player) {
+        roles.removePlayer(player);
+        advancedRules.removePlayer(player);
+        handicap.removePlayer(player);
+    }
+
     private void attemptStartGame(Boolean ignored) {
         // FIXME
     }

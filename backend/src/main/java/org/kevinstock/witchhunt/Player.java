@@ -20,7 +20,9 @@ public class Player {
     // TODO: components should have a priority so this displays nicely
     private final List<UiComponent> components = new ArrayList<>();
 
-    private ClientConnection client; // TODO: should this be a list of client?
+    // This could be a list of clients so someone can log in multiple times,
+    // but I think a few places assume there's only one client per player.
+    private ClientConnection client;
 
     public Player(ClientConnection client, Lobby lobby, String username, String password) {
         this.lobby = lobby;
@@ -101,6 +103,10 @@ public class Player {
         }
 
         send(ADMIN_BUTTONS, lobby.getAdminButtons());
+    }
+
+    public List<UiComponent> getComponents() {
+        return components;
     }
 
     public void addComponent(UiComponent component) {

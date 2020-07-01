@@ -12,13 +12,13 @@ public class Lobby {
 
     private final String name;
     private final Map<String, Player> usernameLookup = new HashMap<>();
-    private final Map<String, String> kickPlayer = new HashMap<>();
+    private final Map<Player, String> kickPlayer = new HashMap<>();
     private final Map<String, Consumer<Boolean>> actions = new HashMap<>();
 
     private int day = 0;
     private String phaseIcon = "config";
     private ConfigureGame configuration = new ConfigureGame(this);
-    private boolean acceptingNewPlayers = true; // TODO: volatile? nah, just make methods called by server sync
+    private boolean mutablePlayerList = true;
 
     public Lobby(String name) {
         this.name = name;
@@ -34,21 +34,21 @@ public class Lobby {
             } else {
                 LoginError.passwordError(client, "Username taken / incorrect password");
             }
-        } else if (!acceptingNewPlayers) {
+        } else if (!mutablePlayerList) {
             LoginError.lobbyError(client, "Not accepting new players right now");
         } else {
             Player player = new Player(client, this, username, password);
             usernameLookup.put(username, player);
             configuration.addParticipant(player);
-            kickPlayer.put(username, createAction(ignored -> removePlayer(player)));
+            kickPlayer.put(player, createAction(ignored -> removePlayer(player)));
             if (usernameLookup.size() == 1) {
                 player.setAdmin(true);
                 configuration.addWriter(player);
             }
             player.send("logged_in", new LoggedInMessage(this.name, username, password));
+            player.sendSecretMessage(String.format("Welcome to lobby %s. Your username is '%s' and your password is '%s'.", name, username, password), List.of("join", "username"));
+            usernameLookup.values().forEach(p -> p.sendPublicMessage(username + " has joined the lobby.", List.of("join", username)));
             updateAdminButtons();
-            // TODO: send the player a message with user/lobby/password?
-            // TODO: message everyone this player has joined the lobby.
         }
     }
 
@@ -79,8 +79,8 @@ public class Lobby {
         return day;
     }
 
-    public void rejectNewPlayers() {
-        acceptingNewPlayers = false;
+    public void lockPlayerList() {
+        mutablePlayerList = false;
     }
 
     public List<Buttons.ButtonMessage> getAdminButtons() {
@@ -88,8 +88,8 @@ public class Lobby {
 
         // TODO: add pause and advance phase buttons as needed
 
-        kickPlayer.forEach((name, button) -> {
-            buttons.add(new Buttons.ButtonMessage("Kick " + name, button));
+        kickPlayer.forEach((player, button) -> {
+            buttons.add(new Buttons.ButtonMessage("Kick " + player.getUsername(), button));
         });
 
         return buttons;
@@ -100,7 +100,27 @@ public class Lobby {
     }
 
     public void removePlayer(Player player) {
-        // TODO
+        if (!mutablePlayerList) {
+            return;
+        } else {
+            kickPlayer.remove(player);
+            configuration.removePlayer(player);
+
+            for (String username : usernameLookup.keySet()) {
+                if (usernameLookup.get(username).equals(player)) {
+                    usernameLookup.remove(username);
+                    break;
+                }
+            }
+
+            usernameLookup
+                    .values()
+                    .forEach(
+                            p ->
+                                    p.sendPublicMessage(
+                                            player.getUsername() + " has left the lobby.",
+                                            List.of("join", player.getUsername())));
+        }
         updateAdminButtons();
     }
 
@@ -108,7 +128,7 @@ public class Lobby {
         actions.clear();
         day = 0;
         phaseIcon = "config";
-        acceptingNewPlayers = true;
+        mutablePlayerList = true;
 
         configuration = new ConfigureGame(this);
 

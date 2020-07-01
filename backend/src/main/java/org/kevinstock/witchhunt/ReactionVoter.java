@@ -96,6 +96,19 @@ public class ReactionVoter implements UiComponent {
         player.addComponent(this);
     }
 
+    public void removePlayer(Player player) {
+        writers.remove(player);
+        participants.remove(player);
+
+        if (votes != null) {
+            votes.remove(player);
+        }
+
+        reactions.forEach(x -> x.remove(player));
+
+        notifyPlayers();
+    }
+
     public void addWriter(Player player) {
         if (!participants.contains(player)) {
             throw new IllegalStateException("Can't add writer that isn't already a participant");
@@ -107,10 +120,6 @@ public class ReactionVoter implements UiComponent {
 
         seqId++;
         notifyPlayer(player);
-    }
-
-    public void removePlayer(Player player) {
-        throw new UnsupportedOperationException();
     }
 
     @Override
