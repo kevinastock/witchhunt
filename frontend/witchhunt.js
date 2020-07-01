@@ -89,33 +89,6 @@ add_state_field("versioned_data", new Map(), update_versioned);
 //  * "components" - a list of other keys in versioned_data to show the user
 // TODO: we need some way to nuke this map at the end of a game - or at least on logout
 
-// FIXME delete this shit.
-let stupid_test_data = [];
-for (var i = 0; i < 95; i++) {
-    // TODO: things to add to log messages:
-    //  * a list of people mentioned so fuse can tag search with higher weight
-    //  * flag if this is private (would also be a good tag)
-    //  * ideally anything could be found, but fuse doesn't have to look at msg
-    //  msg: `<span data-tooltip="foo,bar,baz">Hello World</span>`,
-    let tod = ["day", "night"][Math.floor(Math.random() * 2)];
-    let foobar = makeid(3);
-    let visibility = Math.random() >= 0.5 ? "secret" : "public";
-    let tags = [tod, foobar, visibility];
-
-    stupid_test_data.push({
-        id: i,
-        message: '<span data-tooltip="Hello Kevin">' + foobar + '</span>',
-        visibility: visibility,
-        day_phase: tod,
-        day: i,
-        tags: tags,
-    });
-}
-updates({
-    "logs": stupid_test_data,
-});
-// end of garbage test code
-
 // Stuff that the server will never update
 var local_state = {
     // The local state of the form fields for logging in
