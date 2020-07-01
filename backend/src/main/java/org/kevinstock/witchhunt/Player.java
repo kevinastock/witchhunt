@@ -5,21 +5,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class Player {
-    private final List<LogMessage> logs = new ArrayList<>();
     private static final String ADMIN_BUTTONS = "admin_buttons";
-
+    private final List<LogMessage> logs = new ArrayList<>();
     private final String username;
     private final String password;
     private final Lobby lobby;
-
+    // TODO: components should have a priority so this displays nicely
+    private final List<UiComponent> components = new ArrayList<>();
     private long seqId = 0;
     private long latestClientSeqId = 0;
     private long logIds = 0;
     private boolean isAdmin = false;
-
-    // TODO: components should have a priority so this displays nicely
-    private final List<UiComponent> components = new ArrayList<>();
-
     // This could be a list of clients so someone can log in multiple times,
     // but I think a few places assume there's only one client per player.
     private ClientConnection client;

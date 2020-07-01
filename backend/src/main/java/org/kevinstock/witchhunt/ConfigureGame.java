@@ -15,6 +15,7 @@ public class ConfigureGame {
     private static final String WITCHES = "Witches";
 
     private static final LinkedHashMap<String, Class<? extends Role>> ROLES = new LinkedHashMap<>();
+
     static {
         ROLES.put(Priest.NAME, Priest.class);
         ROLES.put(Judge.NAME, Judge.class);

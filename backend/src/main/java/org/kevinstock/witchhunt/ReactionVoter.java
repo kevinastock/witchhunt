@@ -7,28 +7,8 @@ import java.util.stream.Collectors;
 // if only mimimum are selected, clicking again does not unselect.
 // useful for advancedRules and handicap in configure game
 public class ReactionVoter implements UiComponent {
-    public enum Icon {
-        SKULL("skull"),
-        SHUFFLE("random"),
-        CHECK("check"),
-        BOMB("bomb"),
-        BAN("ban"),
-        TARGET("crosshairs"),
-        DICE("dice"),
-        LIFE("heart"),
-        JUDGE("gavel"),
-        ;
-
-        private String icon;
-
-        Icon(String icon) {
-            this.icon = icon;
-        }
-    }
-
     private static final int DISTINCT_REACTIONS = 4;
     private static final int ALLOWED_REACTIONS = 1;
-
     private final String key = UUID.randomUUID().toString();
     private final Lobby lobby;
     private final String title;
@@ -39,11 +19,9 @@ public class ReactionVoter implements UiComponent {
     private final List<Player> writers;
     private final boolean showReactions;
     private final String icon;
-
     private final List<Map<Player, Selector>> reactions = new ArrayList<>();
     private final Selector sharedSelector;
     private final Map<Player, Selector> votes;
-
     private long seqId = 0;
 
     // Each player votes independently
@@ -149,6 +127,25 @@ public class ReactionVoter implements UiComponent {
 
     private void notifyPlayer(Player player) {
         player.sendVersionedData(key, seqId, new ReactionVoterMessage(player, this));
+    }
+
+    public enum Icon {
+        SKULL("skull"),
+        SHUFFLE("random"),
+        CHECK("check"),
+        BOMB("bomb"),
+        BAN("ban"),
+        TARGET("crosshairs"),
+        DICE("dice"),
+        LIFE("heart"),
+        JUDGE("gavel"),
+        ;
+
+        private final String icon;
+
+        Icon(String icon) {
+            this.icon = icon;
+        }
     }
 
     private static class ReactionVoterMessage {

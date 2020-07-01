@@ -24,6 +24,63 @@ public class Lobby {
         this.name = name;
     }
 
+    /*
+    Make sure that the values are good enough that if this lobby doesn't exist, we can create it and log this user
+    in as the admin.
+
+    All the requireNonNull's here are just to make intellij be quiet because it's analysis doesn't see we'd have already
+    returned.
+
+    The unstable api is guava's HtmlEscapers. If this ends up being the only use of guava, just implement it here.
+    Or try using proguard: https://github.com/google/guava/wiki/UsingProGuardWithGuava
+     */
+    @SuppressWarnings("UnstableApiUsage")
+    public static boolean basicLoginCheck(ClientConnection client, String lobby, String username, String password) {
+        LoginError loginError = new LoginError();
+
+        if (lobby == null || lobby.equals("")) {
+            loginError.lobby = "Required";
+        }
+
+        if (username == null || username.equals("")) {
+            loginError.username = "Required";
+        }
+
+        if (password == null || password.equals("")) {
+            loginError.password = "Required";
+        }
+
+        if (loginError.hasErrors(client)) {
+            return false;
+        }
+
+        if (!Objects.requireNonNull(lobby).equals(HtmlEscapers.htmlEscaper().escape(lobby))) {
+            loginError.lobby = "No html characters";
+        }
+
+        if (!Objects.requireNonNull(username).equals(HtmlEscapers.htmlEscaper().escape(username))) {
+            loginError.username = "No html characters";
+        }
+
+        if (loginError.hasErrors(client)) {
+            return false;
+        }
+
+        if (lobby.length() > 12) {
+            loginError.lobby = "Too long, max 12 characters";
+        }
+
+        if (username.length() > 12) {
+            loginError.username = "Too long, max 12 characters";
+        }
+
+        if (Objects.requireNonNull(password).length() > 60) {
+            loginError.password = "Too long, max 60 characters";
+        }
+
+        return !loginError.hasErrors(client);
+    }
+
     // Ok yes, I'm just lazy. All the entry methods here are sync because I don't want to worry about race conditions.
     synchronized public void login(ClientConnection client, String username, String password) {
         if (usernameLookup.containsKey(username)) {
@@ -63,20 +120,20 @@ public class Lobby {
         }
     }
 
-    public void setPhaseIcon(String icon) {
-        phaseIcon = icon;
-    }
-
     public String getPhaseIcon() {
         return phaseIcon;
     }
 
-    public void setDay(int day) {
-        this.day = day;
+    public void setPhaseIcon(String icon) {
+        phaseIcon = icon;
     }
 
     public int getDay() {
         return day;
+    }
+
+    public void setDay(int day) {
+        this.day = day;
     }
 
     public void lockPlayerList() {
@@ -163,14 +220,6 @@ public class Lobby {
         String username = "";
         String password = "";
 
-        public boolean hasErrors(ClientConnection client) {
-            boolean error = !(lobby.equals("") && username.equals("") && password.equals(""));
-            if (error) {
-                client.send("login_messages", this);
-            }
-            return error;
-        }
-
         public static void passwordError(ClientConnection client, String message) {
             LoginError error = new LoginError();
             error.password = message;
@@ -182,62 +231,13 @@ public class Lobby {
             error.lobby = message;
             error.hasErrors(client);
         }
-    }
 
-    /*
-    Make sure that the values are good enough that if this lobby doesn't exist, we can create it and log this user
-    in as the admin.
-
-    All the requireNonNull's here are just to make intellij be quiet because it's analysis doesn't see we'd have already
-    returned.
-
-    The unstable api is guava's HtmlEscapers. If this ends up being the only use of guava, just implement it here.
-    Or try using proguard: https://github.com/google/guava/wiki/UsingProGuardWithGuava
-     */
-    @SuppressWarnings("UnstableApiUsage")
-    public static boolean basicLoginCheck(ClientConnection client, String lobby, String username, String password) {
-        LoginError loginError = new LoginError();
-
-        if (lobby == null || lobby.equals("")) {
-            loginError.lobby = "Required";
+        public boolean hasErrors(ClientConnection client) {
+            boolean error = !(lobby.equals("") && username.equals("") && password.equals(""));
+            if (error) {
+                client.send("login_messages", this);
+            }
+            return error;
         }
-
-        if (username == null || username.equals("")) {
-            loginError.username = "Required";
-        }
-
-        if (password == null || password.equals("")) {
-            loginError.password = "Required";
-        }
-
-        if (loginError.hasErrors(client)) {
-            return false;
-        }
-
-        if (!Objects.requireNonNull(lobby).equals(HtmlEscapers.htmlEscaper().escape(lobby))) {
-            loginError.lobby = "No html characters";
-        }
-
-        if (!Objects.requireNonNull(username).equals(HtmlEscapers.htmlEscaper().escape(username))) {
-            loginError.username = "No html characters";
-        }
-
-        if (loginError.hasErrors(client)) {
-            return false;
-        }
-
-        if (lobby.length() > 12) {
-            loginError.lobby = "Too long, max 12 characters";
-        }
-
-        if (username.length() > 12) {
-            loginError.username = "Too long, max 12 characters";
-        }
-
-        if (Objects.requireNonNull(password).length() > 60) {
-            loginError.password = "Too long, max 60 characters";
-        }
-
-        return !loginError.hasErrors(client);
     }
 }
