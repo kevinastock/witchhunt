@@ -453,6 +453,9 @@ function reaction(row, reaction_index, color) {
     }
 
     if (votes.length > 0) {
+        votes.sort(function (a, b) {
+            a.localeCompare(b, 'en', {'sensitivity': 'base'});
+        });
         attrs["class"] += color;
         attrs["data-tooltip"] = votes.join(", ");
     }

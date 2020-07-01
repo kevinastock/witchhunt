@@ -168,6 +168,7 @@ public class Lobby {
                 .stream()
                 .map(p ->
                         new PlayerStatusMessage(p.getUsername(), p.isConnected(), p.isAlive()))
+                .sorted(Comparator.comparing(PlayerStatusMessage::getUsername, String.CASE_INSENSITIVE_ORDER))
                 .collect(Collectors.toList());
         usernameLookup.values().forEach(p -> p.send(PLAYER_STATUS, status));
 
@@ -269,6 +270,10 @@ public class Lobby {
             this.username = username;
             this.connected = connected;
             this.alive = alive;
+        }
+
+        public String getUsername() {
+            return username;
         }
     }
 }
