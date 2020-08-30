@@ -90,6 +90,11 @@ add_state_field("versioned_data", new Map(), update_versioned);
 //  * "leave_lobby" - a list of buttons (really just one) for the user to leave the lobby
 // TODO: we need some way to nuke this map at the end of a game - or at least on logout
 
+// This is gross, I'm sorry. Components are things that show up on the front
+// panel, but some shit gets hacked in to it that shouldn't show up there,
+// notably the "leave lobby" button.
+var hidden_components = [ "leave_lobby" ];
+
 add_state_field("player_status", [], update_clobber);
 
 // Stuff that the server will never update
@@ -537,7 +542,7 @@ function draw_component(component) {
 }
 
 function actions_column() {
-    return lookup_versioned("components", []).map(lookup_versioned).map(draw_component);
+    return lookup_versioned("components", []).filter(c => hidden_components.indexOf(c) === -1).map(lookup_versioned).map(draw_component);
     /*
         // TODO: box of buttons (collapsable?):
         //      - volunteer to die modal
