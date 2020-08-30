@@ -1,6 +1,10 @@
 * Priority things to do:
     * admin promotion button
-    * timed phases, admin pause button, admin kills
+    * client visible validation of player count vs roles selected
+    * start game button
+    * timed phases
+    * admin pause button
+    * admin kills
 
 * Settings:
     * allow setting log length
