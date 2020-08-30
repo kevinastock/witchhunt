@@ -197,6 +197,7 @@ public class Lobby {
 
     public void makeAdmin(Player player) {
         player.makeAdmin();
+        configuration.addWriter(player);
         updatePlayerStatus();
         updateAdminButtons();
     }

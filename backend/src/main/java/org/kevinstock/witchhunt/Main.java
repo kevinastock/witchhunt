@@ -17,15 +17,12 @@ public class Main {
         int port = 6789;
 
         WebSocketServer server = new SimpleServer(new InetSocketAddress(host, port));
-        server.start();
-        logger.info("Started");
-
-        // This is just a gross hack because I can't get intellij to shutdown
-        // cleanly. Hit enter on stdin to shutdown the server - releasing the
-        // port so you can start it again immediately.
-        // https://github.com/TooTallNate/Java-WebSocket/blob/master/src/main/example/ChatServer.java#L84-L95
-		BufferedReader sysin = new BufferedReader( new InputStreamReader( System.in ) );
-        String in = sysin.readLine();
-        server.stop(3000);
+        try {
+            logger.info("Starting server");
+            server.run();
+        } finally {
+            // Ensure that when intellij stops this process, we actually close the socket.
+            server.stop();
+        }
     }
 }
