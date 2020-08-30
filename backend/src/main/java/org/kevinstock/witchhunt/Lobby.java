@@ -17,6 +17,7 @@ public class Lobby {
     private final String name;
     private final Map<String, Player> usernameLookup = new HashMap<>();
     private final Map<Player, String> kickPlayer = new HashMap<>();
+    private final Map<Player, String> promotePlayer = new HashMap<>();
     private final Map<String, Consumer<Boolean>> actions = new HashMap<>();
 
     private int day = 0;
@@ -103,6 +104,7 @@ public class Lobby {
             usernameLookup.put(username, player);
             configuration.addParticipant(player);
             kickPlayer.put(player, createAction(ignored -> removePlayer(player)));
+            promotePlayer.put(player, createAction(ignored -> makeAdmin(player)));
             new Buttons(
                     this,
                     LEAVE_LOBBY,
@@ -163,6 +165,16 @@ public class Lobby {
             buttons.add(new Buttons.ButtonMessage("Kick " + player.getUsername(), button));
         });
 
+        // TODO: make these a different color
+        promotePlayer.forEach(
+                (player, button) -> {
+                    if (!player.isAdmin()) {
+                        buttons.add(
+                                new Buttons.ButtonMessage(
+                                        "Promote " + player.getUsername(), button));
+                    }
+                });
+
         return buttons;
     }
 
@@ -183,12 +195,19 @@ public class Lobby {
         // TODO: Make sure this is called when a player dies
     }
 
+    public void makeAdmin(Player player) {
+        player.makeAdmin();
+        updatePlayerStatus();
+        updateAdminButtons();
+    }
+
     public void removePlayer(Player player) {
         if (!mutablePlayerList) {
             return;
         }
 
         kickPlayer.remove(player);
+        promotePlayer.remove(player);
         configuration.removePlayer(player);
 
         for (String username : usernameLookup.keySet()) {
@@ -213,6 +232,8 @@ public class Lobby {
 
         player.disconnect();
         updateAdminButtons();
+        // This doesn't need to update player status because the player's
+        // connection will be closed, which triggers a status update
     }
 
     public void resetLobby() {

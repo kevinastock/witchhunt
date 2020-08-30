@@ -1,10 +1,12 @@
 * Priority things to do:
     * admin promotion button
-    * client visible validation of player count vs roles selected
+    * client visible validation of player count vs roles selected (on start game button?, or in reaction voter note - which would need to become versioned data?)
     * start game button
     * timed phases
     * admin pause button
     * admin kills
+    * close modals with escape
+    * hover text on game rules sections (advanced & handicap)
 
 * Settings:
     * allow setting log length
