@@ -5,7 +5,6 @@
     * timed phases
     * admin pause button
     * admin kills
-    * close modals with escape
     * hover text on game rules sections (advanced & handicap)
 
 * Settings:

@@ -93,7 +93,7 @@ add_state_field("versioned_data", new Map(), update_versioned);
 // This is gross, I'm sorry. Components are things that show up on the front
 // panel, but some shit gets hacked in to it that shouldn't show up there,
 // notably the "leave lobby" button.
-var hidden_components = [ "leave_lobby" ];
+var hidden_components = ["leave_lobby"];
 
 add_state_field("player_status", [], update_clobber);
 
@@ -575,7 +575,6 @@ function close_modal() {
     local_state.modal = no_modal;
 }
 
-
 function modal_helper(title, body) {
     // TODO: might need is-clipped somewhere if modals get long
     return m(".modal.is-active", [
@@ -805,7 +804,7 @@ function login_body() {
 var Game = {
     view: function() {
         return [
-            m("div.non-footer", [
+            m(".non-footer", [
                 header(),
                 state.logged_in() ? game_body() : login_body(),
             ]),
@@ -816,3 +815,10 @@ var Game = {
 };
 
 m.mount(document.body, Game);
+
+window.onkeyup = function(e) {
+    if (e.key === "Escape") {
+        close_modal();
+        m.redraw();
+    }
+};
