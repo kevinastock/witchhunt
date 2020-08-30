@@ -41,12 +41,15 @@ public class ConfigureGame {
         ROLES.put(Inquisitor.NAME, Inquisitor.class);
     }
 
+    private final Lobby lobby;
     private final SharedReactionVoter roles;
     private final SharedReactionVoter advancedRules;
     private final SharedReactionVoter handicap;
     private final Buttons startGame;
 
     public ConfigureGame(Lobby lobby) {
+        this.lobby = lobby;
+
         roles = new SharedReactionVoter(
                 lobby,
                 "Roles",
@@ -106,6 +109,36 @@ public class ConfigureGame {
     }
 
     private void attemptStartGame(Boolean ignored) {
-        // FIXME
+        List<String> roleSelections = roles.getSelections();
+        List<String> advancedRulesSelection = advancedRules.getSelections();
+        List<String> handicapSection = handicap.getSelections();
+
+        List<String> errorMessages = new ArrayList<>();
+
+        if (roleSelections.size() != lobby.getPlayerCount()) {
+            errorMessages.add(String.format("%d roles selected for %d players.", roleSelections.size(), lobby.getPlayerCount()));
+        }
+
+        // TODO: get rid of these when reaction voter supports min selected
+        if (advancedRulesSelection.size() != 1) {
+            errorMessages.add("Please select an advanced rules option.");
+        }
+
+        if (handicapSection.size() != 1) {
+            errorMessages.add("Please select a handicap option.");
+        }
+
+        if (errorMessages.size() > 0) {
+            errorMessages.add(0, "Cannot start game:");
+            lobby.sendAdminsMessage(String.join(" ", errorMessages), List.of());
+            return;
+        }
+
+        lobby.sendPublicMessage("Game is starting!", List.of("start", "roles", "rules"));
+
+        // TODO: include a list of roles in the game
+        // TODO: include rule selections
+        // TODO: include count of witches
+        // TODO: actually start the game
     }
 }

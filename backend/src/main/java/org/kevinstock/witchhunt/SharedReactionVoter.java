@@ -1,6 +1,7 @@
 package org.kevinstock.witchhunt;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class SharedReactionVoter implements UiComponent {
     private final String key = UUID.randomUUID().toString();
@@ -52,6 +53,10 @@ public class SharedReactionVoter implements UiComponent {
 
         seqId++;
         notifyPlayer(player);
+    }
+
+    public List<String> getSelections() {
+        return sharedSelector.getSelected().stream().map(i -> reactionVoter.getChoices().get(i)).collect(Collectors.toList());
     }
 
     @Override

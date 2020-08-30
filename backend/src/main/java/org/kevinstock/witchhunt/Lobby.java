@@ -118,7 +118,7 @@ public class Lobby {
             }
             player.send("logged_in", new LoggedInMessage(this.name, username, password));
             player.sendSecretMessage(String.format("Welcome to lobby %s. Your username is '%s' and your password is '%s'.", name, username, password), List.of("join", "username"));
-            usernameLookup.values().forEach(p -> p.sendPublicMessage(username + " has joined the lobby.", List.of("join", username)));
+            sendPublicMessage(username + " has joined the lobby.", List.of("join", username));
             updateAdminButtons();
             updatePlayerStatus();
         }
@@ -133,6 +133,10 @@ public class Lobby {
         } else {
             callback.accept(value);
         }
+    }
+
+    public int getPlayerCount() {
+        return usernameLookup.size();
     }
 
     public String getPhaseIcon() {
@@ -153,6 +157,16 @@ public class Lobby {
 
     public void lockPlayerList() {
         mutablePlayerList = false;
+    }
+
+    public void sendAdminsMessage(String message, List<String> tags) {
+        List<String> allTags = new ArrayList<>(tags);
+        allTags.add("admin");
+        usernameLookup.values().stream().filter(Player::isAdmin).forEach(player -> player.sendSecretMessage(message, allTags));
+    }
+
+    public void sendPublicMessage(String message, List<String> tags) {
+        usernameLookup.values().forEach(player -> player.sendPublicMessage(message, tags));
     }
 
     public List<Buttons.ButtonMessage> getAdminButtons() {
@@ -216,13 +230,8 @@ public class Lobby {
             }
         }
 
-        usernameLookup
-                .values()
-                .forEach(
-                        p ->
-                                p.sendPublicMessage(
-                                        player.getUsername() + " has left the lobby.",
-                                        List.of("join", player.getUsername())));
+        sendPublicMessage(player.getUsername() + " has left the lobby.",
+                List.of("join", player.getUsername()));
 
         // Promote someone to admin if there isn't one
         if (usernameLookup.values().stream().noneMatch(Player::isAdmin)) {

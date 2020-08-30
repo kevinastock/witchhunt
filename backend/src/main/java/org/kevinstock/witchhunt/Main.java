@@ -20,7 +20,7 @@ public class Main {
             server.run();
         } finally {
             // Ensure that when intellij stops this process, we actually close the socket.
-            server.stop();
+            server.stop(3000);
         }
     }
 }

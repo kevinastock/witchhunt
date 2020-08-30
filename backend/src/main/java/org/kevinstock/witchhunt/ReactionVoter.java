@@ -56,6 +56,10 @@ public class ReactionVoter {
         return participants;
     }
 
+    public List<String> getChoices() {
+        return choices;
+    }
+
     @SuppressWarnings("UnusedDeclaration")
     public enum Icon {
         SKULL("skull"),
