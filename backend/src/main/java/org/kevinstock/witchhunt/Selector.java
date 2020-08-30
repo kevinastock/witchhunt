@@ -30,6 +30,9 @@ public class Selector {
                 .forEach(actions::add);
     }
 
+    public List<Integer> getSelected() {
+        return selected;
+    }
 
     public String getKey() {
         return key;

@@ -41,13 +41,13 @@ public class ConfigureGame {
         ROLES.put(Inquisitor.NAME, Inquisitor.class);
     }
 
-    private final ReactionVoter roles;
-    private final ReactionVoter advancedRules;
-    private final ReactionVoter handicap;
+    private final SharedReactionVoter roles;
+    private final SharedReactionVoter advancedRules;
+    private final SharedReactionVoter handicap;
     private final Buttons startGame;
 
     public ConfigureGame(Lobby lobby) {
-        roles = new ReactionVoter(
+        roles = new SharedReactionVoter(
                 lobby,
                 "Roles",
                 "",
@@ -55,11 +55,10 @@ public class ConfigureGame {
                 new ArrayList<>(ROLES.keySet()),
                 ROLES.size(),
                 new ArrayList<>(),
-                new ArrayList<>(),
-                true
+                new ArrayList<>()
         );
 
-        advancedRules = new ReactionVoter(
+        advancedRules = new SharedReactionVoter(
                 lobby,
                 "Advanced rules",
                 "",
@@ -67,11 +66,10 @@ public class ConfigureGame {
                 List.of(ENABLED, DISABLED),
                 1,
                 new ArrayList<>(),
-                new ArrayList<>(),
-                true
+                new ArrayList<>()
         );
 
-        handicap = new ReactionVoter(
+        handicap = new SharedReactionVoter(
                 lobby,
                 "Handicap",
                 "",
@@ -79,8 +77,7 @@ public class ConfigureGame {
                 List.of(VILLAGERS, NONE, WITCHES),
                 1,
                 new ArrayList<>(),
-                new ArrayList<>(),
-                true
+                new ArrayList<>()
         );
 
         startGame = new Buttons(lobby,
