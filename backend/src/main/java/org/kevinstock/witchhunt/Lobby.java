@@ -33,7 +33,7 @@ public class Lobby {
     Make sure that the values are good enough that if this lobby doesn't exist, we can create it and log this user
     in as the admin.
 
-    All the requireNonNull's here are just to make intellij be quiet because it's analysis doesn't see we'd have already
+    All the requireNonNull  here are just to make intellij be quiet because it's analysis doesn't see we'd have already
     returned.
 
     The unstable api is guava's HtmlEscapers. If this ends up being the only use of guava, just implement it here.
@@ -161,9 +161,7 @@ public class Lobby {
         // TODO: add pause and advance phase buttons as needed
 
         // TODO: switch to kill player buttons once in game
-        kickPlayer.forEach((player, button) -> {
-            buttons.add(new Buttons.ButtonMessage("Kick " + player.getUsername(), button));
-        });
+        kickPlayer.forEach((player, button) -> buttons.add(new Buttons.ButtonMessage("Kick " + player.getUsername(), button)));
 
         // TODO: make these a different color
         promotePlayer.forEach(
@@ -259,6 +257,7 @@ public class Lobby {
         return selector;
     }
 
+    @SuppressWarnings({"FieldCanBeLocal", "UnusedDeclaration", "MismatchedQueryAndUpdateOfCollection"})
     private static class LoggedInMessage {
         private final String lobby;
         private final String username;
@@ -297,6 +296,7 @@ public class Lobby {
         }
     }
 
+    @SuppressWarnings({"FieldCanBeLocal", "UnusedDeclaration", "MismatchedQueryAndUpdateOfCollection"})
     private static class PlayerStatusMessage {
         private final String username;
         private final boolean connected;

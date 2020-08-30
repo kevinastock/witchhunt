@@ -4,7 +4,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 // TODO: add a minimum number of selections, and initial selections parameter,
-// if only mimimum are selected, clicking again does not unselect.
+// if only minimum are selected, clicking again does not unselect.
 // useful for advancedRules and handicap in configure game
 public class ReactionVoter implements UiComponent {
     private static final int DISTINCT_REACTIONS = 4;
@@ -129,6 +129,7 @@ public class ReactionVoter implements UiComponent {
         player.sendVersionedData(key, seqId, new ReactionVoterMessage(player, this));
     }
 
+    @SuppressWarnings("UnusedDeclaration")
     public enum Icon {
         SKULL("skull"),
         SHUFFLE("random"),
@@ -148,6 +149,7 @@ public class ReactionVoter implements UiComponent {
         }
     }
 
+    @SuppressWarnings({"FieldCanBeLocal", "UnusedDeclaration", "MismatchedQueryAndUpdateOfCollection"})
     private static class ReactionVoterMessage {
         private final String type;
         private final String title;
@@ -202,6 +204,7 @@ public class ReactionVoter implements UiComponent {
         }
     }
 
+    @SuppressWarnings({"FieldCanBeLocal", "UnusedDeclaration", "MismatchedQueryAndUpdateOfCollection"})
     private static class ReactionVoterRowMessage {
         private final String choice;
         private final String select_action;

@@ -152,6 +152,7 @@ public class Player {
         return true;
     }
 
+    @SuppressWarnings({"FieldCanBeLocal", "UnusedDeclaration", "MismatchedQueryAndUpdateOfCollection"})
     private static class VersionedData {
         private final String key;
         private final Object data;
@@ -166,6 +167,7 @@ public class Player {
         }
     }
 
+    @SuppressWarnings({"FieldCanBeLocal", "UnusedDeclaration", "MismatchedQueryAndUpdateOfCollection"})
     private static class LogMessage {
         private final long id;
         private final String message;

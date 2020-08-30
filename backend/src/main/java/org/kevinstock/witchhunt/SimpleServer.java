@@ -49,7 +49,7 @@ public class SimpleServer extends WebSocketServer {
 
         JsonObject o = JsonParser.parseString(message).getAsJsonObject();
         switch (o.get("action").getAsString()) {
-            case "login":
+            case "login" -> {
                 LoginMessage loginMessage = gson.fromJson(o.get("data"), LoginMessage.class);
                 if (client.getLobby() != null) {
                     logger.error(String.format("Extra attempt to login from %s: %s", conn.getRemoteSocketAddress(), message));
@@ -57,18 +57,17 @@ public class SimpleServer extends WebSocketServer {
                     Lobby lobby = lobbies.computeIfAbsent(loginMessage.getLobby(), Lobby::new);
                     lobby.login(client, loginMessage.getUsername(), loginMessage.getPassword());
                 }
-                break;
-            case "set":
+            }
+            case "set" -> {
                 SetMessage setMessage = gson.fromJson(o.get("data"), SetMessage.class);
                 Lobby lobby = client.getLobby();
                 if (lobby == null) {
-                    logger.error(String.format("Unexpect set message before login from %s: %s", conn.getRemoteSocketAddress(), message));
+                    logger.error(String.format("Unexpected set message before login from %s: %s", conn.getRemoteSocketAddress(), message));
                 } else {
                     lobby.set(client, setMessage.getClientSeqId(), setMessage.getKey(), setMessage.getValue());
                 }
-                break;
-            default:
-                throw new RuntimeException("TODO");
+            }
+            default -> throw new RuntimeException("TODO");
         }
     }
 
@@ -87,6 +86,7 @@ public class SimpleServer extends WebSocketServer {
         System.out.println("server started successfully");
     }
 
+    @SuppressWarnings({"FieldCanBeLocal", "UnusedDeclaration", "MismatchedQueryAndUpdateOfCollection"})
     private static class LoginMessage {
         private String lobby;
         private String username;
@@ -105,6 +105,7 @@ public class SimpleServer extends WebSocketServer {
         }
     }
 
+    @SuppressWarnings({"FieldCanBeLocal", "UnusedDeclaration", "MismatchedQueryAndUpdateOfCollection"})
     private static class SetMessage {
         private int client_seq_id;
         private String key;

@@ -42,6 +42,7 @@ public class Buttons implements UiComponent {
         player.sendVersionedData(key, 0, new ButtonsMessage(this));
     }
 
+    @SuppressWarnings({"FieldCanBeLocal", "UnusedDeclaration", "MismatchedQueryAndUpdateOfCollection"})
     private static class ButtonsMessage {
         private final String type;
         private final List<ButtonMessage> buttons;
@@ -55,6 +56,7 @@ public class Buttons implements UiComponent {
         }
     }
 
+    @SuppressWarnings({"FieldCanBeLocal", "UnusedDeclaration", "MismatchedQueryAndUpdateOfCollection"})
     public static class ButtonMessage {
         private final String message;
         private final String action;
